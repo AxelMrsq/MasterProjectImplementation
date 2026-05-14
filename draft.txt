@@ -1,0 +1,11 @@
+Aggregator
+- Send global parameter / GET
+- Aggregate / UPDATE
+- Receive local parameter / POST
+
+Local node
+- Train
+- Infer
+- Get global parameter / GET
+- Send local parameter / POST
+- Activate aggregation / UPDATE
