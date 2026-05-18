@@ -1,4 +1,5 @@
 import socket
+import pickle
 
 class Node :
     def __init__(self):
@@ -11,11 +12,11 @@ class Node :
             print(f"Connecté au serveur {'192.168.1.34'}")
                 
            
-            print("Envoi : Ping")
-            s.sendall(b"Ping")
+            print("Envoi : sendglobalparameters")
+            s.sendall(b"sendglobalparameters")
             
-            data = s.recv(1024)
-            print(f"Reçu du serveur : {data.decode('utf-8')}")
+            data = s.recv(30410)
+            print(f"Reçu du serveur : {pickle.loads(data)}")
                 
                 
         except KeyboardInterrupt:
