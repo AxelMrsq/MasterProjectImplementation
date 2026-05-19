@@ -51,7 +51,7 @@ class Aggregator :
                         print(f"Received : {message}") 
 
 
-                        self.getLocalParameters(message)
+                        self.getLocalParameters(message, addr)
 
 
                     else:
@@ -69,8 +69,11 @@ class Aggregator :
     def aggregate(self) :
         pass
 
-    def getLocalParameters(self, local_parameters) :
-        pass
+    def getLocalParameters(self, local_parameters, node) :
+        local_model_path = createModel(f"local_model_{node}.keras")
+        local_model = load_model(local_model_path)
+        local_model.set_weights(local_parameters)
+        
 
 ag = Aggregator()
 
