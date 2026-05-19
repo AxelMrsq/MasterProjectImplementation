@@ -6,7 +6,7 @@ import pickle
 
 class Aggregator :
     def __init__(self):
-        self.global_model_path = createModel()
+        self.global_model_path = createModel("global_model.keras")
         
     def start_server(self):
         try:
@@ -44,7 +44,14 @@ class Aggregator :
                         self.aggregate()
 
                     elif msg == "getlocalparameters" :
-                        self.getLocalParameters()
+                        conn.sendall(b"Pong")
+                    
+                        data = conn.recv(30410)
+                        message = pickle.loads(data)
+                        print(f"Received : {message}") 
+
+
+                        self.getLocalParameters(message)
 
 
                     else:
@@ -62,7 +69,7 @@ class Aggregator :
     def aggregate(self) :
         pass
 
-    def getLocalParameters(self) :
+    def getLocalParameters(self, local_parameters) :
         pass
 
 ag = Aggregator()
