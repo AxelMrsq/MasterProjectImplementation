@@ -142,5 +142,7 @@ class Node :
 
 
 n = Node()
-n.sendSerializedLocalParameters()
+
+# n.sendSerializedLocalParameters()
+
 n.getGlobalParameters()

@@ -80,6 +80,10 @@ class Aggregator :
             # get local parameters command management
             elif msg == "getlocalparameters" :
                 print("Managing getlocalparameters command...")
+
+                # Confirm the reception of the command to received local parameters
+                print("Socket : Confirming reception of the command")
+                conn.sendall(b"Pong")
                 
                 # Waiting for message
                 print("Socket : Waiting for message")
