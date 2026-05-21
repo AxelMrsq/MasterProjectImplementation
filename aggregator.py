@@ -7,6 +7,9 @@ import pickle
 # Package for managing model object 
 from tensorflow.keras.models import load_model
 
+# Package to manage array
+import numpy
+
 # Self made model creation functions
 from model import createModel
 
@@ -139,6 +142,50 @@ class Aggregator :
         # Saving local model duplicata
         print("Local : Saving local model duplicata")
         local_model.save(local_model_path)
+
+
+    # Method to do the aggregation (mean of layers)
+    def aggregate(self, local_parameters_list):
+        print("Execuing method 'getLocalParameters'...")
+
+        # create an empty parameters array
+        print("Local : Creating an empty parameters array")
+        aggregated_parameters = []
+
+        # Formating with the correct size the empty parameters array
+        print("Local : Formating the aggregated parameters array")
+        for parameters_layer in local_parameters_list[0] :
+
+            # Adding each layers initialized at 0
+            print("\nLocal : Modifying size (for loop)")
+            aggregated_parameters.append(numpy.zeros_like(parameters_layer))
+
+        # Summing layers
+        print("Local : Summin different nodes layers")
+        for i in range(len(aggregated_parameters)) :
+
+            # Adding each layers iteratively
+            print(f"\nLocal : Adding layers {i}")
+            aggregated_parameters[i] = local_parameters_list[0] + local_parameters_list[1]
+
+        # Creating final parameters array
+        print("Local : Creating the final global parameters array")
+        final_parameters = []
+
+        # Averaging layers
+        print("Local : Avering different nodes layers")
+        for parameters_layer in aggregated_parameters :
+
+            # Averaging each layers iteratively
+            print(f"Local : Averging layers {i}")
+            final_parameters.append(parameters_layer / 2)
+        
+        # Loading global model
+        print("Local : Loading global model")
+        global_model = load_model(self.global_model_path)
+        global_model.set_weights(final_parameters)
+        global_model.save(self.global_model_path)
+
 
 
 
