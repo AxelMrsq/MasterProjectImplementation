@@ -145,7 +145,7 @@ class Aggregator :
 
 
     # Method to do the aggregation (mean of layers)
-    def aggregate(self, local_parameters_list):
+    def aggregate(self, local_parameters_1 , local_parameters_2):
         print("Execuing method 'getLocalParameters'...")
 
         # create an empty parameters array
@@ -154,7 +154,7 @@ class Aggregator :
 
         # Formating with the correct size the empty parameters array
         print("Local : Formating the aggregated parameters array")
-        for parameters_layer in local_parameters_list[0] :
+        for parameters_layer in local_parameters_1 :
 
             # Adding each layers initialized at 0
             print("\nLocal : Modifying size (for loop)")
@@ -166,7 +166,7 @@ class Aggregator :
 
             # Adding each layers iteratively
             print(f"\nLocal : Adding layers {i}")
-            aggregated_parameters[i] = local_parameters_list[0] + local_parameters_list[1]
+            aggregated_parameters[i] = local_parameters_1[i] + local_parameters_2[i]
 
         # Creating final parameters array
         print("Local : Creating the final global parameters array")
@@ -174,20 +174,32 @@ class Aggregator :
 
         # Averaging layers
         print("Local : Avering different nodes layers")
+        n = 0
         for parameters_layer in aggregated_parameters :
 
             # Averaging each layers iteratively
-            print(f"Local : Averging layers {i}")
+            print(f"Local : Averging layers {n}")
+            n+=1
             final_parameters.append(parameters_layer / 2)
         
         # Loading global model
         print("Local : Loading global model")
         global_model = load_model(self.global_model_path)
+
+        # Setting parameters of the global model with the new one
+        print("Local : Setting parameters into the global model")
         global_model.set_weights(final_parameters)
+
+        # Saving the global model
+        print("Local : Saving the global model")
         global_model.save(self.global_model_path)
 
 
 
 
 ag = Aggregator()
-ag.startServer()
+
+model1 = load_model("global_model.keras")
+model2 = load_model("local_model_('192.168.1.34', 52234).keras")
+
+ag.aggregate(model1.get_weights(),model2.get_weights())
