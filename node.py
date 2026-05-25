@@ -120,8 +120,18 @@ class Node :
             s.sendall(b"sendglobalparameters")
             
             # Waiting for answer (global parameters)
-            print("Socket : Waiting for answer")
-            data = s.recv(30410)
+            # print("Socket : Waiting for answer")
+            # data = s.recv(30410)
+            
+
+            # https://stackoverflow.com/questions/44637809/python-3-6-socket-pickle-data-was-truncated
+            data = b""
+            while True:
+                packet = s.recv(4096)
+                if not packet: break
+                data += packet
+
+                
 
             # Dersializing the answer (global parameters)
             print("Local : Deserializing the answer")
