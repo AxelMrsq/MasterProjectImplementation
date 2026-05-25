@@ -10,6 +10,9 @@ from tensorflow.keras.models import load_model
 # Self made model creation functions
 from model import createModel
 
+# Manage json files
+# https://www.w3schools.com/python/python_json.asp
+import json
 
 
 # Class representing edge local computer
@@ -23,6 +26,14 @@ class Node :
         # Initialising local model 
         print("Local : Creating local model *via function*")
         self.local_model_path = createModel("local_model.keras")
+        
+        # Openning the json secret file
+        print("Local : Reading json file")
+        jsonFile = open('vps.json', 'r', encoding='utf-8')
+
+        # Setting up the aggregator ip
+        print("Local : Getting the aggregator ip")
+        self.ag_ip = json.load(jsonFile)["ip"]
 
 
     # Method to send local paramaters to the aggregator
@@ -38,8 +49,8 @@ class Node :
             s = socket.socket(socket.AF_INET, socket.SOCK_STREAM) 
              
             # Connect 
-            print("Socket : Connecting to server {'192.168.1.34'}")
-            s.connect(('192.168.1.34', 65432))
+            print(f"Socket : Connecting to server {self.ag_ip}")
+            s.connect((self.ag_ip, 65432))
             
             # Send a message
             print("Socket : Sending command {'getlocalparameters'}")
@@ -101,8 +112,8 @@ class Node :
             s = socket.socket(socket.AF_INET, socket.SOCK_STREAM) 
 
             # Connect
-            print("Socket : Connecting to server {'192.168.1.34'}")
-            s.connect(('192.168.1.34', 65432))
+            print(f"Socket : Connecting to server {self.ag_ip}")
+            s.connect((self.ag_ip, 65432))
             
             # Send a message
             print("Socket : Sending command {'sendglobalparameters'}")
