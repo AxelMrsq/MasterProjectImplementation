@@ -1,3 +1,4 @@
 tf_env/
 __pycache__/
 vps.json
+proto_data.csv

@@ -162,8 +162,43 @@ class Node :
             print("Error : Connection refused")
 
 
-n = Node()
+    # def trainLocalModel(self) :
+        # print("Executing method 'trainLocalModel'...")
+
+        # load data for training
+        # print("Local : Loading data *via function* ")
+        # X_train, y_train, X_val, y_val = loadData("proto_data.csv")
+
+        # Load local model
+        # print("Local : Loading local model")
+        # local_model = load_model(self.local_model_path)
+
+        # Fitting local model
+        # print("Local : Fitting local model")
+        # local_model.fit()
+
+        # Saving local model
+        # print("Local : Saving local model")
+        # local_model.save(self.local_model_path)
+
+
+    # def inferWithLocalModel(self) :
+        # print("Executing method 'inferWithLocalModel'...")
+
+        # Loading local model
+        # print("Local : Loading local model")
+        # local_model = load_model(self.local_model_path)
+
+        # Predict new data with local model
+        # print("Local : Predicting new data")
+        # new_data = local_model.predict()
+
+    # def loadData(self, path) :
+        # print("Executing method 'loadData'...")
+
+
+# n = Node()
 
 # n.sendSerializedLocalParameters()
 
-n.getGlobalParameters()
+# n.getGlobalParameters()

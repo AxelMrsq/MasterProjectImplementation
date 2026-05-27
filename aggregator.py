@@ -89,8 +89,16 @@ class Aggregator :
                 conn.sendall(b"Pong")
                 
                 # Waiting for message
-                print("Socket : Waiting for message")
-                data = conn.recv(30410)
+                # print("Socket : Waiting for message")
+                # data = conn.recv(30410)
+
+                 # https://stackoverflow.com/questions/44637809/python-3-6-socket-pickle-data-was-truncated
+                data = b""
+                while True:
+                    packet = s.recv(4096)
+                    if not packet: break
+                    data += packet
+
 
                 # Deserializing message
                 print("Local : Deserializing message")
