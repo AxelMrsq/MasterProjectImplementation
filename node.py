@@ -14,6 +14,9 @@ from model import createModel
 # https://www.w3schools.com/python/python_json.asp
 import json
 
+# Manage pandas dataframe/csv
+import pandas
+
 
 # Class representing edge local computer
 class Node :
@@ -23,17 +26,17 @@ class Node :
     def __init__(self):
         print("Execuing method '__init__'...")
         
-        # Initialising local model 
-        print("Local : Creating local model *via function*")
-        self.local_model_path = createModel("local_model.keras")
+        # # Initialising local model 
+        # print("Local : Creating local model *via function*")
+        # self.local_model_path = createModel("local_model.keras")
         
-        # Openning the json secret file
-        print("Local : Reading json file")
-        jsonFile = open('vps.json', 'r', encoding='utf-8')
+        # # Openning the json secret file
+        # print("Local : Reading json file")
+        # jsonFile = open('vps.json', 'r', encoding='utf-8')
 
-        # Setting up the aggregator ip
-        print("Local : Getting the aggregator ip")
-        self.ag_ip = json.load(jsonFile)["ip"]
+        # # Setting up the aggregator ip
+        # print("Local : Getting the aggregator ip")
+        # self.ag_ip = json.load(jsonFile)["ip"]
 
 
     # Method to send local paramaters to the aggregator
@@ -167,7 +170,7 @@ class Node :
 
         # load data for training
         # print("Local : Loading data *via function* ")
-        # X_train, y_train, X_val, y_val = loadData("proto_data.csv")
+        # X_train, y_train, X_val, y_val, X_test, y_test = loadData("proto_data.csv")
 
         # Load local model
         # print("Local : Loading local model")
@@ -193,12 +196,37 @@ class Node :
         # print("Local : Predicting new data")
         # new_data = local_model.predict()
 
-    # def loadData(self, path) :
-        # print("Executing method 'loadData'...")
+    def loadData(self, path) :
+        print("Executing method 'loadData'...")
+
+        data = pandas.read_csv(path, sep=";")
+
+        features_col = ["Weekday", "Hour", "AVG4D (kWh)", "TempCluster"]
+        target_col = "Consumption"
+
+        samples = []
+        
+        # https://www.youtube.com/watch?v=yF6Jrzz7E5s
+        for i in range(0,len(data)) :
+            
+            past_features = data.loc[i-24:i-1][features_col]
+            past_target = data.loc[i-24:i-1][target_col]
+            actual_features = data.loc[i][features_col]
+            actual_target = data.loc[i][target_col]
+
+            sample = {"past_features" : past_features, "past_target": past_target, "actual_features": actual_features, "actual_target": actual_target}
+
+            samples.append(sample)
+        
+
+        
 
 
-# n = Node()
+        # return X_train, y_train, X_val, y_val, X_test, y_test tensorflow sets
+        # print("Local : Returning X_train, y_train, X_val, y_val, X_test, y_test tensorflow sets")
+        # return X_train, y_train, X_val, y_val, X_test, y_test
 
-# n.sendSerializedLocalParameters()
 
-# n.getGlobalParameters()
+n = Node()
+
+n.loadData("proto_data.csv")
