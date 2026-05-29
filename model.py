@@ -16,7 +16,7 @@ def getmodel() :
     
     # Adding an Input layer
     print("**Local : Adding an Input layer to the model object**")
-    model.add(Input(shape = (24, 1)))
+    model.add(Input(shape = (24, 5)))
 
     # Adding an LSTM layer
     print("**Local : Adding an LSTM layer to the model object**")

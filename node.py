@@ -201,24 +201,24 @@ class Node :
 
         data = pandas.read_csv(path, sep=";")
 
-        features_col = ["Weekday", "Hour", "AVG4D (kWh)", "TempCluster"]
+        features_col = ["Consumption", "Weekday", "Hour", "AVG4D (kWh)", "TempCluster"]
         target_col = "Consumption"
 
         samples = []
         
         # https://www.youtube.com/watch?v=yF6Jrzz7E5s
-        for i in range(0,len(data)) :
+        for i in range(0,len(data)-1) :
             
-            past_features = data.loc[i-24:i-1][features_col]
-            past_target = data.loc[i-24:i-1][target_col]
-            actual_features = data.loc[i][features_col]
-            actual_target = data.loc[i][target_col]
+            features = data.loc[i-23:i][features_col]
+            target = data.loc[i+1][target_col]
+            
 
-            sample = {"past_features" : past_features, "past_target": past_target, "actual_features": actual_features, "actual_target": actual_target}
-
+            sample = {"features" : features, "target": target}
+            
             samples.append(sample)
         
-
+        print(samples[2]["features"])
+        print(samples[1]["target"])
         
 
 
