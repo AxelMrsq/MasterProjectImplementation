@@ -7,6 +7,9 @@ import pickle
 # Package for managing model object 
 from tensorflow.keras.models import load_model
 
+# Package for managing optimizer
+from tensorflow.keras.optimizers import SGD
+
 # Self made model creation functions
 from model import createModel
 
@@ -29,8 +32,8 @@ class Node :
         print("Execuing method '__init__'...")
         
         # # Initialising local model 
-        # print("Local : Creating local model *via function*")
-        # self.local_model_path = createModel("local_model.keras")
+        print("Local : Creating local model *via function*")
+        self.local_model_path = createModel("local_model.keras")
         
         # # Openning the json secret file
         # print("Local : Reading json file")
@@ -167,36 +170,40 @@ class Node :
             print("Error : Connection refused")
 
 
-    # def trainLocalModel(self) :
-        # print("Executing method 'trainLocalModel'...")
+    def trainLocalModel(self) :
+        print("Executing method 'trainLocalModel'...")
 
         # load data for training
-        # print("Local : Loading data *via function* ")
-        # X_train, y_train, X_val, y_val, X_test, y_test = loadData("proto_data.csv")
+        print("Local : Loading data *via function* ")
+        X_train, y_train, X_val, y_val, X_test, y_test = self.loadData("proto_data.csv")
 
         # Load local model
-        # print("Local : Loading local model")
-        # local_model = load_model(self.local_model_path)
+        print("Local : Loading local model")
+        local_model = load_model(self.local_model_path)
+
+        # Create Stochastic gradient descent optimizer
+        # https://www.tensorflow.org/api_docs/python/tf/keras/optimizers/SGD
+        local_model.compile(optimizer=SGD(learning_rate=0.0001) , loss='mse')
 
         # Fitting local model
-        # print("Local : Fitting local model")
-        # local_model.fit()
+        print("Local : Fitting local model")
+        local_model.fit(x=X_train, y=y_train, validation_data=(X_val, y_val), epochs=5, batch_size = 100) # https://www.tensorflow.org/api_docs/python/tf/keras/Model#fit
 
         # Saving local model
-        # print("Local : Saving local model")
-        # local_model.save(self.local_model_path)
+        print("Local : Saving local model")
+        local_model.save(self.local_model_path)
 
 
-    # def inferWithLocalModel(self) :
-        # print("Executing method 'inferWithLocalModel'...")
+    def inferWithLocalModel(self, input_data) :
+        print("Executing method 'inferWithLocalModel'...")
 
         # Loading local model
-        # print("Local : Loading local model")
-        # local_model = load_model(self.local_model_path)
+        print("Local : Loading local model")
+        local_model = load_model(self.local_model_path)
 
         # Predict new data with local model
-        # print("Local : Predicting new data")
-        # new_data = local_model.predict()
+        print("Local : Predicting new data")
+        new_data = local_model.predict(X=input_data)
 
     def loadData(self, path) :
         print("Executing method 'loadData'...")
@@ -253,4 +260,4 @@ class Node :
 
 n = Node()
 
-n.loadData("proto_data.csv")
+n.inferWithLocalModel()
