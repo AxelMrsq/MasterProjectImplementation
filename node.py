@@ -17,6 +17,8 @@ import json
 # Manage pandas dataframe/csv
 import pandas
 
+# Manage numpy array
+import numpy 
 
 # Class representing edge local computer
 class Node :
@@ -217,14 +219,36 @@ class Node :
             
             samples.append(sample)
         
-        print(samples[2]["features"])
-        print(samples[1]["target"])
+        # print(samples[2]["features"])
+        # print(samples[1]["target"])
         
+        # https://www.tensorflow.org/api_docs/python/tf/keras/utils/pad_sequences
+        from tensorflow.keras.preprocessing.sequence import pad_sequences
 
+        features_list = [sample["features"] for sample in samples]
+
+        X_train = pad_sequences(features_list[:int(len(samples)*0.85)], padding='pre', dtype='float32')
+        X_val= pad_sequences(features_list[int(len(samples)*0.80):int(len(samples)*0.90)], padding='pre', dtype='float32')
+        X_test = pad_sequences(features_list[int(len(samples)*0.90):], padding='pre', dtype='float32')
+
+        targets_list = [sample["target"] for sample in samples]
+
+        y_train = numpy.array(targets_list[:int(len(samples)*0.85)], dtype='float32')
+        y_val = numpy.array(targets_list[int(len(samples)*0.80):int(len(samples)*0.90)], dtype='float32')
+        y_test = numpy.array(targets_list[int(len(samples)*0.90):], dtype='float32')
+
+        # print(X_train_padded.shape)
+        # print(y_train.shape)
+
+        # print(X_val_padded.shape)
+        # print(y_val.shape)
+
+        # print(X_test_padded.shape)
+        # print(y_test.shape)       
 
         # return X_train, y_train, X_val, y_val, X_test, y_test tensorflow sets
-        # print("Local : Returning X_train, y_train, X_val, y_val, X_test, y_test tensorflow sets")
-        # return X_train, y_train, X_val, y_val, X_test, y_test
+        print("Local : Returning X_train, y_train, X_val, y_val, X_test, y_test tensorflow sets")
+        return X_train, y_train, X_val, y_val, X_test, y_test
 
 
 n = Node()
