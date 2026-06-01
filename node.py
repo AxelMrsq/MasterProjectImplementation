@@ -203,7 +203,7 @@ class Node :
 
         # Predict new data with local model
         print("Local : Predicting new data")
-        new_data = local_model.predict(X=input_data)
+        return local_model.predict(input_data)
 
     def loadData(self, path) :
         print("Executing method 'loadData'...")
@@ -244,6 +244,8 @@ class Node :
         y_val = numpy.array(targets_list[int(len(samples)*0.80):int(len(samples)*0.90)], dtype='float32')
         y_test = numpy.array(targets_list[int(len(samples)*0.90):], dtype='float32')
 
+        print(X_train)
+
         # print(X_train_padded.shape)
         # print(y_train.shape)
 
@@ -260,4 +262,16 @@ class Node :
 
 n = Node()
 
-n.inferWithLocalModel()
+features_col = ["Consumption", "Weekday", "Hour", "AVG4D (kWh)", "TempCluster"]
+
+data = pandas.read_csv("proto_data.csv", sep=";")
+print(data.loc[24]["Consumption"])
+
+X = numpy.array(data.loc[0:23][features_col])
+
+# Add the batch dimension to make it (1, 24, 5)
+X = X.reshape(1, 24, 5)
+
+print(n.inferWithLocalModel(X))
+
+# n.loadData("proto_data.csv")
