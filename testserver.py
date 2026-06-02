@@ -1,52 +1,78 @@
 import socket
+import pickle
+import pandas
 
 
-def handleClient(conn, addr) :
+nodeManagementDf = pandas.read_csv("testNodeManagement.csv", sep=";")
+
+
+def newNodeCreation():
+    print("new node creation")
+    # if nodeManagementDf["token"] == [] :
+    #     nodeManagementDf.append({"token": 1})
+    pass
+
+
+def manageMsg(token_part, msg, value) :
+    print("managing msg")
+    pass
+
+
+def handleClient(conn, addr, s) :
     try:
-        # Waiting for initial command message
-        print(f"Socket : Waiting for message from {addr}")
-        data = conn.recv(4096)
-        if not data:
-            return
-        # Decode the message
-        incoming_str = data.decode('utf-8')
-        try:
-            if ":" in incoming_str:
-                token_part, msg = incoming_str.split(":", 1)
-                
-            else:
-                pass
-                # Fallback if the client didn't send a token in the expected format
-               
-        except ValueError:
-            # Fallback if the token part isn't a valid integer
-            conn.sendall(b"Error: Invalid token format")
+        byte_message = b""
+        while True:
+            packet = s.recv(4096)
+            if not packet: break
+            byte_message += packet
 
+        clear_message = pickle.loads(byte_message)
+
+        # Expecting format: "TOKEN_ID:COMMAND:VALUE"
+        token_part, msg, value = clear_message.split(":", 1)
+
+        if token_part == "NEW" :
+            ans = newNodeCreation()
+
+        else : 
+            if token_part in nodeManagementDf["token"] :
+                ans = manageMsg(token_part, msg, value)
+
+            else :
+                conn.sendall("Invalid message format - Expecting format: 'TOKEN_ID:COMMAND:VALUE'")
+
+    except KeyboardInterrupt:
+            print("\nConn closed via KeyboardInterrupt")
 
     except Exception as e:
-            print(f"Error handling client {addr}: {e}")
+        print(e)
+        conn.sendall("Invalid message format - Expecting format: 'TOKEN_ID:COMMAND:VALUE'")
+        conn.close()
+
     finally:
         conn.close()
-        print(f"Socket : Connection closed with {addr}")
-     
+        print(f"\nConn closed via end of the handleClient function")
+    
 
-counter_list = []
-counter = 0
 def startServer():
-    print("Executing method 'startServer'...")
     try:
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM) 
-        s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         s.bind(('0.0.0.0', 65432))
         s.listen()
-        print("Socket : Listening on 0.0.0.0:65432")
 
         conn, addr = s.accept()
 
-        handleClient(conn, addr, socket)
+        handleClient(conn, addr, s)
+
     except KeyboardInterrupt:
-            print("\nServer shutting down via KeyboardInterrupt.")
+        print("\nServer shutting down via KeyboardInterrupt.")
+
+    except Exception as e:
+        print(e)
+        s.close()
+
     finally:
+        print("\nServer shutting down via end of the startServer function")
         s.close()
 
 startServer()

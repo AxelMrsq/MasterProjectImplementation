@@ -1,30 +1,28 @@
 import socket
+import pickle
 
 
 def startClient():
     try:
-        print("Trying...")
-
-        # Creating internet connection
-        print("Socket : Creating socket")
-        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM) 
-            
-        # Connect 
-        print("Socket : Connecting to server 192.168.1.55")
+        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)     
         s.connect(("192.168.1.55", 65432))
         
-        # Send a message
-        print("Socket : Sending command {'getlocalparameters'}")
-        s.sendall(b"getlocalparameters")
+        s.sendall(b"test")
+
+        byte_message = b""
+        while True:
+            packet = s.recv(4096)
+            if not packet: break
+            byte_message += packet
+
+        print(pickle.loads(byte_message))
     
     # End script manually 
     except KeyboardInterrupt:
-        print("Except...")
-        print("\nSocket : Deconnected")
-
+        s.close()
+        
     # Catching server error
     except ConnectionRefusedError:
-        print("Except...")
-        print("Socket : Connection refused")
-
+        s.close
+       
 startClient()
