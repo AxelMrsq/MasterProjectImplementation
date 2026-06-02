@@ -36,12 +36,14 @@ class Node :
         self.local_model_path = createModel("local_model.keras")
         
         # # Openning the json secret file
-        # print("Local : Reading json file")
-        # jsonFile = open('vps.json', 'r', encoding='utf-8')
+        print("Local : Reading json file")
+        jsonFile = open('vps.json', 'r', encoding='utf-8')
 
         # # Setting up the aggregator ip
-        # print("Local : Getting the aggregator ip")
-        # self.ag_ip = json.load(jsonFile)["ip"]
+        print("Local : Getting the aggregator ip")
+        self.ag_ip = json.load(jsonFile)["ip"]
+
+        self.token = None 
 
 
     # Method to send local paramaters to the aggregator

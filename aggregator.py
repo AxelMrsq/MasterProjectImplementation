@@ -26,6 +26,8 @@ class Aggregator :
         # Initialising local model 
         print("\nLocal : Creating global model *via function*")
         self.global_model_path = createModel("global_model.keras")
+
+        self.token_list = []
         
     
     # Method for running the aggregator 
