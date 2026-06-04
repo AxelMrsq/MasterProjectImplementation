@@ -1,11 +1,8 @@
-Aggregator
-- Send global parameter / GET
-- Aggregate / UPDATE
-- Receive local parameter / POST
+sendserialisedparameter
+-sendcommand
+-Receive
+-sendserialisedparameter
 
-Local node
-- Train
-- Infer
-- Get global parameter / GET
-- Send local parameter / POST
-- Activate aggregation / UPDATE
+getglobalparameter
+-sendcommand
+-Receiveserializedparameter

@@ -43,8 +43,6 @@ class Node :
         print("Local : Getting the aggregator ip")
         self.ag_ip = json.load(jsonFile)["ip"]
 
-        self.token = None 
-
 
     # Method to send local paramaters to the aggregator
     def sendSerializedLocalParameters(self):
