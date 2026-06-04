@@ -75,7 +75,7 @@ class Aggregator :
 
             data = b""
             while True:
-                packet = s.recv(30410)
+                packet = s.recv(40410)
                 if not packet: break
                 data += packet
 
