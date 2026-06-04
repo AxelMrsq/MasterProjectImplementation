@@ -32,6 +32,9 @@ class Aggregator :
             # Initialising global model 
             print("\nCreating global model *via function*")
             self.global_model_path = createModel("global_model.keras")
+
+        else :
+            self.global_model_path = "global_model.keras"
         
         # Reading from nodes.csv nodes informations
         print("\nLoading nodes informations")
@@ -73,12 +76,13 @@ class Aggregator :
             # msg = data.decode('utf-8')
             # print(f"Received : {msg}")
 
-            data = b""
-            while True:
-                packet = s.recv(40410)
-                if not packet: break
-                data += packet
-
+            # data = b""
+            # while True:
+            #     packet = conn.recv(40410)
+            #     if not packet: break
+            #     data += packet
+            
+            data = conn.recv(40410)
                 
             # Dersializing the answer (global parameters)
             print("Local : Deserializing the answer")
@@ -111,9 +115,11 @@ class Aggregator :
             # If msg is valid
             if msg_valid == True :
                 print("Reading the message")
+
+                print(self.nodes["id"].values)
                  
                 #  If token exist 
-                if int(token) in self.nodes["id"] :
+                if int(token) in self.nodes["id"].values:
                     print(f"Token identified as {int(token)}")
 
                     # Ping pong command management
@@ -129,7 +135,7 @@ class Aggregator :
                         print("Managing sendglobalparameters command...")
                         
                         # Getting serialized global parameters
-                        print("Local : Getting serialized global parameters *via function*")
+                        print("Getting serialized global parameters *via function*")
                         serialized_global_parameters = self.getSerializedGlobalParameters()
                         
                         # Sending serialized global parameters
