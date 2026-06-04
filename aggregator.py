@@ -26,9 +26,10 @@ class Aggregator :
     # Method for initialisation
     def __init__(self):
         print("Execuing method '__init__'...")
-
+        
+        # Checking if there is already a global model save
         if not("global_model.keras" in os.listdir(os.getcwd())) :
-            # Initialising local model 
+            # Initialising global model 
             print("\nCreating global model *via function*")
             self.global_model_path = createModel("global_model.keras")
         

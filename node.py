@@ -23,6 +23,8 @@ import pandas
 # Manage numpy array
 import numpy 
 
+import os
+
 # Class representing edge local computer
 class Node :
 
@@ -31,17 +33,23 @@ class Node :
     def __init__(self):
         print("Execuing method '__init__'...")
         
-        # # Initialising local model 
-        print("Local : Creating local model *via function*")
-        self.local_model_path = createModel("local_model.keras")
+        # Checking if there is already a local model save
+        if not("local_model.keras" in os.listdir(os.getcwd())) :
+            # Initialising local model 
+            print("Creating local model *via function*")
+            self.local_model_path = createModel("local_model.keras")
         
-        # # Openning the json secret file
-        print("Local : Reading json file")
+        # Openning the json secret file
+        print("Reading json file")
         jsonFile = open('vps.json', 'r', encoding='utf-8')
 
-        # # Setting up the aggregator ip
-        print("Local : Getting the aggregator ip")
+        # Setting up the aggregator ip
+        print("Getting the aggregator ip")
         self.ag_ip = json.load(jsonFile)["ip"]
+        
+        # Setting up the node token
+        print("Getting the node token")
+        self.token = int(json.load(jsonFile)["token"])
 
 
     # Method to send local paramaters to the aggregator
@@ -53,20 +61,22 @@ class Node :
             print("Trying...")
 
             # Creating internet connection
-            print("Socket : Creating socket")
+            print("Creating socket")
             s = socket.socket(socket.AF_INET, socket.SOCK_STREAM) 
              
             # Connect 
-            print(f"Socket : Connecting to server {self.ag_ip}")
+            print(f"Connecting to server {self.ag_ip}")
             s.connect((self.ag_ip, 65432))
+
+            # Get serialized local parameters
+            print("Getting serialized local parameters *via function*")
+            serialized_Local_parameters = self.getSerializedLocalParameters()
             
             # Send a message
-            print("Socket : Sending command {'getlocalparameters'}")
-            s.sendall(b"getlocalparameters")
+            print(f"Sending command {self.token}:getlocalparameters:'local parameters'")
+            s.sendall()
             
-            # Get serialized local parameters
-            print("Local : Getting serialized local parameters *via function*")
-            serialized_Local_parameters = self.getSerializedLocalParameters()
+         
             
             # Waiting for answer
             print("Socket : Waiting for answer")
@@ -116,16 +126,16 @@ class Node :
         try:
             
             # Creating internet connection
-            print("\nSockey : Creating socket")
+            print("\nCreating socket")
             s = socket.socket(socket.AF_INET, socket.SOCK_STREAM) 
 
             # Connect
-            print(f"Socket : Connecting to server {self.ag_ip}")
+            print(f"Connecting to server {self.ag_ip}")
             s.connect((self.ag_ip, 65432))
             
             # Send a message
-            print("Socket : Sending command {'sendglobalparameters'}")
-            s.sendall(b"sendglobalparameters")
+            print(f"Sending command {self.token}:sendglobalparameters:none")
+            s.sendall(pickle.dumps(f"{self.token}:sendglobalparameters:none"))
             
             # Waiting for answer (global parameters)
             # print("Socket : Waiting for answer")
@@ -135,12 +145,11 @@ class Node :
             # https://stackoverflow.com/questions/44637809/python-3-6-socket-pickle-data-was-truncated
             data = b""
             while True:
-                packet = s.recv(4096)
+                packet = s.recv(30410)
                 if not packet: break
                 data += packet
 
                 
-
             # Dersializing the answer (global parameters)
             print("Local : Deserializing the answer")
             global_parameters = pickle.loads(data)
@@ -261,17 +270,4 @@ class Node :
 
 
 n = Node()
-
-features_col = ["Consumption", "Weekday", "Hour", "AVG4D (kWh)", "TempCluster"]
-
-data = pandas.read_csv("proto_data.csv", sep=";")
-print(data.loc[24]["Consumption"])
-
-X = numpy.array(data.loc[0:23][features_col])
-
-# Add the batch dimension to make it (1, 24, 5)
-X = X.reshape(1, 24, 5)
-
-print(n.inferWithLocalModel(X))
-
-# n.loadData("proto_data.csv")
+n.getGlobalParameters()
