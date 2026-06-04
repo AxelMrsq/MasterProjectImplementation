@@ -42,14 +42,16 @@ class Node :
         # Openning the json secret file
         print("Reading json file")
         jsonFile = open('vps.json', 'r', encoding='utf-8')
+        data = json.load(jsonFile)
+        jsonFile.close()
 
         # Setting up the aggregator ip
         print("Getting the aggregator ip")
-        self.ag_ip = json.load(jsonFile)["ip"]
+        self.ag_ip = data["ip"]
         
         # Setting up the node token
         print("Getting the node token")
-        self.token = int(json.load(jsonFile)["token"])
+        self.token = int(data["token"])
 
 
     # Method to send local paramaters to the aggregator

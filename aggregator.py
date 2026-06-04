@@ -64,14 +64,25 @@ class Aggregator :
             print("Connection detected...")
             print(f"\nConnected by {addr}")
 
-            # Waiting for message
-            print("\nWaiting for message")
-            data = conn.recv(4096)
+            # # Waiting for message
+            # print("\nWaiting for message")
+            # data = conn.recv(4096)
             
-            # Decode the message in Byte
-            print("Decoding message")
-            msg = data.decode('utf-8')
-            print(f"Received : {msg}")
+            # # Decode the message in Byte
+            # print("Decoding message")
+            # msg = data.decode('utf-8')
+            # print(f"Received : {msg}")
+
+            data = b""
+            while True:
+                packet = s.recv(30410)
+                if not packet: break
+                data += packet
+
+                
+            # Dersializing the answer (global parameters)
+            print("Local : Deserializing the answer")
+            msg = pickle.loads(data)
             
             # Catching error loop to avoid freeze
             try:
@@ -79,7 +90,7 @@ class Aggregator :
                 
                 # Check the msg format
                 print("Checking message format")
-                token, command, value = text.split(':')
+                token, command, value = msg.split(':')
 
                 # Setting msg valid
                 print("Validating the message")
