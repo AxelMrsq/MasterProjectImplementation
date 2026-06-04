@@ -38,6 +38,9 @@ class Node :
             # Initialising local model 
             print("Creating local model *via function*")
             self.local_model_path = createModel("local_model.keras")
+
+        else : 
+            self.local_model_path = "local_model.keras"
         
         # Openning the json secret file
         print("Reading json file")
@@ -147,7 +150,7 @@ class Node :
             # https://stackoverflow.com/questions/44637809/python-3-6-socket-pickle-data-was-truncated
             data = b""
             while True:
-                packet = s.recv(30410)
+                packet = s.recv(40410)
                 if not packet: break
                 data += packet
 
