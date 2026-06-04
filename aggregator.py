@@ -13,6 +13,10 @@ import numpy
 # Self made model creation functions
 from model import createModel
 
+import os
+
+import pandas
+
 
 
 # Class representing aggregator on virtual private server 
@@ -22,14 +26,17 @@ class Aggregator :
     # Method for initialisation
     def __init__(self):
         print("Execuing method '__init__'...")
-        
-        # Initialising local model 
-        print("\nLocal : Creating global model *via function*")
-        self.global_model_path = createModel("global_model.keras")
 
-        self.token_list = []
+        if not("global_model.keras" in os.listdir(os.getcwd())) :
+            # Initialising local model 
+            print("\nCreating global model *via function*")
+            self.global_model_path = createModel("global_model.keras")
         
+        # Reading from nodes.csv nodes informations
+        print("\nLoading nodes informations")
+        self.nodes = pandas.read_csv("nodes.csv")
     
+
     # Method for running the aggregator 
     def startServer(self):
         print("Execuing method 'startServer'...")
@@ -39,81 +46,111 @@ class Aggregator :
             print("\nTrying...")
 
             # Creating internet connection
-            print("\nSocket : Creating socket")
+            print("\nCreating socket")
             s = socket.socket(socket.AF_INET, socket.SOCK_STREAM) 
 
             # Setting parameters of the server connection
-            print("Socket : Parametring socket")
+            print("Parametring socket")
             s.bind(('0.0.0.0', 65432))
 
             # Listening for connection
-            print("Socket : Listening on {'0.0.0.0'}:{65432}")
+            print("Listening on {'0.0.0.0'}:{65432}")
             s.listen()
             
             # Getting information about the connection
-            print("Socket : Waiting for connection")
+            print("Waiting for connection")
             conn, addr = s.accept()
             print("Connection detected...")
-            print(f"\nSocket : Connected by {addr}")
+            print(f"\nConnected by {addr}")
 
             # Waiting for message
-            print("\nSocket : Waiting for message")
-            data = conn.recv(30410)
+            print("\nWaiting for message")
+            data = conn.recv(4096)
             
             # Decode the message in Byte
-            print("Local : Decoding message")
+            print("Decoding message")
             msg = data.decode('utf-8')
-            print(f"Socket : Received : {msg}")
+            print(f"Received : {msg}")
             
-            # Ping pong command management
-            if msg == "ping":
-                print("Managing ping command...")
-                conn.sendall(b"Pong")
+            # Catching error loop to avoid freeze
+            try:
+                print("\nTrying...")
+                
+                # Check the msg format
+                print("Checking message format")
+                token, command, value = text.split(':')
 
-            # send global parameters command management
-            elif msg == "sendglobalparameters" :
-                print("Managing sendglobalparameters command...")
+                # Setting msg valid
+                print("Validating the message")
+                msg_valid = True
+
+            # Catching error
+            except ValueError:
+                print("Except...")
+
+                # Sending error message back
+                print("\nSending error message : String does not match the 'TOKEN:COMMAND:VALUE' format")
+                conn.sendall(b"String does not match the 'TOKEN:COMMAND:VALUE' format")
                 
-                # Getting serialized global parameters
-                print("Local : Getting serialized global parameters *via function*")
-                serialized_global_parameters = self.getSerializedGlobalParameters()
-                
-                # Sending serialized global parameters
-                print("Socket : Sending serialized global parameters")
-                conn.sendall(serialized_global_parameters)
+                # Setting msg unvalid
+                print("Setting message unvalid")
+                msg_valid = False
             
-            # get local parameters command management
-            elif msg == "getlocalparameters" :
-                print("Managing getlocalparameters command...")
+            # If msg is valid
+            if msg_valid == True :
+                print("Reading the message")
+                 
+                #  If token exist 
+                if int(token) in self.nodes["id"] :
+                    print(f"Token identified as {int(token)}")
 
-                # Confirm the reception of the command to received local parameters
-                print("Socket : Confirming reception of the command")
-                conn.sendall(b"Pong")
-                
-                # Waiting for message
-                # print("Socket : Waiting for message")
-                # data = conn.recv(30410)
+                    # Ping pong command management
+                    if command == "ping":
+                        print("Managing 'ping' command...")
 
-                 # https://stackoverflow.com/questions/44637809/python-3-6-socket-pickle-data-was-truncated
-                data = b""
-                while True:
-                    packet = s.recv(4096)
-                    if not packet: break
-                    data += packet
+                        # Answer back "Pong"
+                        print("\nSending back 'Pong'")
+                        conn.sendall(b"Pong")
 
+                    # send global parameters command management
+                    elif command == "sendglobalparameters" :
+                        print("Managing sendglobalparameters command...")
+                        
+                        # Getting serialized global parameters
+                        print("Local : Getting serialized global parameters *via function*")
+                        serialized_global_parameters = self.getSerializedGlobalParameters()
+                        
+                        # Sending serialized global parameters
+                        print("Socket : Sending serialized global parameters")
+                        conn.sendall(serialized_global_parameters)
+                    
+                    # get local parameters command management
+                    elif command == "getlocalparameters" :
+                        print("Managing getlocalparameters command...")
+                        
+                        # Saving local parameters
+                        print(f"\nSaving local parameters from {int(token)}")
+                        # self.getLocalParameters(value, token)
 
-                # Deserializing message
-                print("Local : Deserializing message")
-                message = pickle.loads(data)
-                
-                # Saving local model save 
-                print("Local : saving local model save *via function*")
-                self.getLocalParameters(message, addr)
+            # if msg not valid
+            else :
+                print("Ending the communication")
 
-        # Catching error loop to avoid freeze
+                # Closing the connection
+                print("\nClosing the connection")
+                conn.close()
+
+        # Catching keyboard interruption
         except KeyboardInterrupt:
             print("Except...")
-            print("\nSocket : Deconnected")
+            print("\nDeconnected")
+
+        finally :
+            print("Shutting down server")
+
+            # Closing the socket
+            print("\nClosing the socket")
+            s.close()
 
 
     # Method for getting serialized global parameters
@@ -209,7 +246,4 @@ class Aggregator :
 
 ag = Aggregator()
 
-model1 = load_model("global_model.keras")
-model2 = load_model("local_model_('192.168.1.34', 52234).keras")
-
-ag.aggregate(model1.get_weights(),model2.get_weights())
+ag.startServer()
