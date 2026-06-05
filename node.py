@@ -21,19 +21,58 @@ from tensorflow.keras.optimizers import SGD # Class for stochastic gradient desc
 # Package for managing timeseries data sequence
 from tensorflow.keras.preprocessing.sequence import pad_sequences # Package for managing data sample of different size
 
-# Utils funcions for machine learning 
-from model import createModel # Function for initialising a model with the architecture from
+# Package for managing tensorflow model layers objects
+from tensorflow.keras.layers import LSTM, Dense, Input # Class of LSTM, Dense and input layers
+
+# Package for managing tensorflow model objects
+from tensorflow.keras.models import Sequential # Class of model initializer
 
 
+# Class representing the edge node from the federated learning architecture 
 class Node :
 
-
+    
+    # Node objects initialising method (No input, No return)
     def __init__(self):
-        if not("local_model.keras" in os.listdir(os.getcwd())) :
-            self.local_model_path = createModel("local_model.keras")
+        print("Method '__init__' : Initialising a node object")
+        
+        print("Method '__init__' : Checking if 'local_model.keras' file exists in the current directory")
+
+        # Function for getting current directory path
+        current_directory = os.getcwd() # https://docs.python.org/3/library/os.html#os.getcwd
+        
+        # Function for getting the list of files in the given directory (Here : current directory)
+        current_directory_files = os.listdir(current_directory) # https://docs.python.org/3/library/os.html#os.listdir
+
+        if not("local_model.keras" in current_directory_files) :
+            print("Method '__init__' : No local model save detected => Creating a local model following the architecture from https://ieeexplore.ieee.org/abstract/document/9469923")
+            
+            # Initialize a model object 
+            model = Sequential() # https://www.tensorflow.org/api_docs/python/tf/keras/Sequential
+            # Adding an input layer for 24 times steps and 5 features
+            model.add(Input(shape = (24, 5)))  # https://www.tensorflow.org/api_docs/python/tf/keras/Input
+            # Adding an LSTM layer with 32 cells
+            model.add(LSTM(32, return_sequences=True)) # https://www.tensorflow.org/api_docs/python/tf/keras/layers/LSTM
+            # Adding an LSTM layer with 16 cells
+            model.add(LSTM(16))
+            # Adding a Dense layer with 1 neurone as output
+            model.add(Dense(1)) # https://www.tensorflow.org/api_docs/python/tf/keras/layers/Dense
+
+            # Saving the model object as a keras file in current directory as "local_model.keras"
+            model.save("local_model.keras") # https://www.tensorflow.org/api_docs/python/tf/keras/Model#save
+            
+            # Setting the local_model_path attribute as "local_model.keras"
+            self.local_model_path = "local_model.keras"
+
+            print(f"Method '__init__' : Local model saved in current directory as {self.local_model_path}")
 
         else : 
+            print("Method '__init__' : Local model save detected")
+
+            # Setting the local_model_path attribute as "local_model.keras"
             self.local_model_path = "local_model.keras"
+        
+
         
         jsonFile = open('vps.json', 'r', encoding='utf-8')
         data = json.load(jsonFile)

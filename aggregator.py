@@ -4,7 +4,7 @@ import numpy
 import os
 import pandas
 from tensorflow.keras.models import load_model
-from model import createModel
+from utils import createModel
 
 
 class Aggregator :
