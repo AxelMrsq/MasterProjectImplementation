@@ -1,227 +1,101 @@
-# Package for internet communication
 import socket
-
-# Package for serialization and reverse
 import pickle
-
-# Package for managing model object 
+import json
+import pandas
+import numpy 
+import os
 from tensorflow.keras.models import load_model
-
-# Package for managing optimizer
 from tensorflow.keras.optimizers import SGD
-
-# Self made model creation functions
+from tensorflow.keras.preprocessing.sequence import pad_sequences # https://www.tensorflow.org/api_docs/python/tf/keras/utils/pad_sequences
 from model import createModel
 
-# Manage json files
-# https://www.w3schools.com/python/python_json.asp
-import json
 
-# Manage pandas dataframe/csv
-import pandas
-
-# Manage numpy array
-import numpy 
-
-import os
-
-# Class representing edge local computer
 class Node :
 
 
-    # Method for initialisation 
     def __init__(self):
-        print("Execuing method '__init__'...")
-        
-        # Checking if there is already a local model save
         if not("local_model.keras" in os.listdir(os.getcwd())) :
-            # Initialising local model 
-            print("Creating local model *via function*")
             self.local_model_path = createModel("local_model.keras")
 
         else : 
             self.local_model_path = "local_model.keras"
         
-        # Openning the json secret file
-        print("Reading json file")
         jsonFile = open('vps.json', 'r', encoding='utf-8')
         data = json.load(jsonFile)
         jsonFile.close()
 
-        # Setting up the aggregator ip
-        print("Getting the aggregator ip")
         self.ag_ip = data["ip"]
         
-        # Setting up the node token
-        print("Getting the node token")
         self.token = int(data["token"])
 
 
-    # Method to send local paramaters to the aggregator
     def sendSerializedLocalParameters(self):
-        print("Executing method 'sendSerializedLocalParameters'...")
-        
-        # Catching error loop to avoid freeze
         try:
-            print("Trying...")
-
-            # Creating internet connection
-            print("Creating socket")
             s = socket.socket(socket.AF_INET, socket.SOCK_STREAM) 
-             
-            # Connect 
-            print(f"Connecting to server {self.ag_ip}")
-            s.connect((self.ag_ip, 65432))
-
-            # Get serialized local parameters
-            print("Getting serialized local parameters *via function*")
-            serialized_Local_parameters = self.getSerializedLocalParameters()
-            
-            # Send a message
-            print(f"Sending command {self.token}:getlocalparameters:'local parameters'")
-            s.sendall()
-            
-         
-            
-            # Waiting for answer
-            print("Socket : Waiting for answer")
-            data = s.recv(30410)
-            
-            # Send serialized local parameters
-            print("Socket : Sending serialized local parameters")
-            s.sendall(serialized_Local_parameters)
-            
-            # Closing the internet connection
-            print("Socket : Closing")
-            s.close()
-
-        # End script manually 
-        except KeyboardInterrupt:
-            print("Except...")
-            print("\nSocket : Deconnected")
-
-        # Catching server error
-        except ConnectionRefusedError:
-            print("Except...")
-            print("Socket : Connection refused")
-
-
-    # Method to get local serialized parameters
-    def getSerializedLocalParameters(self) :
-        print("Executing method 'getSerializedLocalParameters'...")
-
-        # Loading the local model
-        print("\n*Local : Loading the local model*")
-        local_model = load_model(self.local_model_path)
-        
-        # Getting parameters from the local model
-        print("*Local : Getting parameters from the local model*")
-        local_parameters = local_model.get_weights()
-        
-        # Serializing local parameters and returning local parameters
-        print("*Local : Returning serialized local parameters*")
-        return pickle.dumps(local_parameters)
-    
-    
-    # Method to get global parameters from the aggregator
-    def getGlobalParameters(self) :
-        print("Executing method 'getGlobalParameters'...")
-
-         # Catching error loop to avoid freeze
-        try:
-            
-            # Creating internet connection
-            print("\nCreating socket")
-            s = socket.socket(socket.AF_INET, socket.SOCK_STREAM) 
-
-            # Connect
-            print(f"Connecting to server {self.ag_ip}")
             s.connect((self.ag_ip, 65432))
             
-            # Send a message
-            print(f"Sending command {self.token}:sendglobalparameters:none")
-            s.sendall(pickle.dumps(f"{self.token}:sendglobalparameters:none"))
-            
-            # Waiting for answer (global parameters)
-            # print("Socket : Waiting for answer")
-            # data = s.recv(30410)
-            
-
-            # https://stackoverflow.com/questions/44637809/python-3-6-socket-pickle-data-was-truncated
-            data = b""
-            while True:
-                packet = s.recv(40410)
-                if not packet: break
-                data += packet
-
-                
-            # Dersializing the answer (global parameters)
-            print("Local : Deserializing the answer")
-            global_parameters = pickle.loads(data)
-            
-            # Loading local model
-            print("Local : Loading the local model")
             local_model = load_model(self.local_model_path)
+    
+            local_parameters = local_model.get_weights()
             
-            # Changing local model parameters with global parameters
-            print("Local : Setting global parameters to the local model")
-            local_model.set_weights(global_parameters)
+            message = {"token":self.token,"command":"sendLocalParameters","value":local_parameters}
+            s.sendall(pickle.dumps(message))
+            
+        except KeyboardInterrupt:
+            s.close()
 
-            # Saving changed local model 
-            print('Local : Saving new local model')
-            local_model.save(self.local_model_path)
+        except ConnectionRefusedError:
+            s.close()
+
+        finally:
+            s.close()
+    
+
+    def getGlobalParameters(self) :
+        try:
+            s = socket.socket(socket.AF_INET, socket.SOCK_STREAM) 
+            s.connect((self.ag_ip, 65432))
             
-            # Closing internet connection
-            print("Socket : Closing")
+            message = {"token":self.token,"command":"getGlobalParameters","value":None}
+            s.sendall(pickle.dumps(message))
+            
+            # https://stackoverflow.com/questions/44637809/python-3-6-socket-pickle-data-was-truncated
+            encoded_data = b""
+            while True:
+                packet = s.recv(4096)
+                if not packet: break
+                encoded_data += packet
+            
+            global_parameters =  pickle.loads(encoded_data)
+
+            local_model = load_model(self.local_model_path)
+            local_model.set_weights(global_parameters)
+            local_model.save(self.local_model_path)    
+        
+        except KeyboardInterrupt:
             s.close()
         
-        # End script manually 
-        except KeyboardInterrupt:
-            print("\nDeconnected...")
-        
-        # Catching server error
         except ConnectionRefusedError:
-            print("Error : Connection refused")
+            s.close()
+        
+        finally:
+            s.close()
 
 
     def trainLocalModel(self) :
-        print("Executing method 'trainLocalModel'...")
-
-        # load data for training
-        print("Local : Loading data *via function* ")
         X_train, y_train, X_val, y_val, X_test, y_test = self.loadData("proto_data.csv")
 
-        # Load local model
-        print("Local : Loading local model")
         local_model = load_model(self.local_model_path)
-
-        # Create Stochastic gradient descent optimizer
-        # https://www.tensorflow.org/api_docs/python/tf/keras/optimizers/SGD
         local_model.compile(optimizer=SGD(learning_rate=0.0001) , loss='mse')
-
-        # Fitting local model
-        print("Local : Fitting local model")
         local_model.fit(x=X_train, y=y_train, validation_data=(X_val, y_val), epochs=5, batch_size = 100) # https://www.tensorflow.org/api_docs/python/tf/keras/Model#fit
-
-        # Saving local model
-        print("Local : Saving local model")
         local_model.save(self.local_model_path)
 
 
     def inferWithLocalModel(self, input_data) :
-        print("Executing method 'inferWithLocalModel'...")
-
-        # Loading local model
-        print("Local : Loading local model")
         local_model = load_model(self.local_model_path)
-
-        # Predict new data with local model
-        print("Local : Predicting new data")
         return local_model.predict(input_data)
 
     def loadData(self, path) :
-        print("Executing method 'loadData'...")
-
         data = pandas.read_csv(path, sep=";")
 
         features_col = ["Consumption", "Weekday", "Hour", "AVG4D (kWh)", "TempCluster"]
@@ -240,11 +114,6 @@ class Node :
             
             samples.append(sample)
         
-        # print(samples[2]["features"])
-        # print(samples[1]["target"])
-        
-        # https://www.tensorflow.org/api_docs/python/tf/keras/utils/pad_sequences
-        from tensorflow.keras.preprocessing.sequence import pad_sequences
 
         features_list = [sample["features"] for sample in samples]
 
@@ -258,19 +127,6 @@ class Node :
         y_val = numpy.array(targets_list[int(len(samples)*0.80):int(len(samples)*0.90)], dtype='float32')
         y_test = numpy.array(targets_list[int(len(samples)*0.90):], dtype='float32')
 
-        print(X_train)
-
-        # print(X_train_padded.shape)
-        # print(y_train.shape)
-
-        # print(X_val_padded.shape)
-        # print(y_val.shape)
-
-        # print(X_test_padded.shape)
-        # print(y_test.shape)       
-
-        # return X_train, y_train, X_val, y_val, X_test, y_test tensorflow sets
-        print("Local : Returning X_train, y_train, X_val, y_val, X_test, y_test tensorflow sets")
         return X_train, y_train, X_val, y_val, X_test, y_test
 
 

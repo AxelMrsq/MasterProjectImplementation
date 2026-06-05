@@ -1,8 +1,0 @@
-sendserialisedparameter
--sendcommand
--Receive
--sendserialisedparameter
-
-getglobalparameter
--sendcommand
--Receiveserializedparameter
