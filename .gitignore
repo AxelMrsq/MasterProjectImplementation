@@ -6,3 +6,4 @@ Short-Term_Energy_Consumption_Forecasting_at_the_Edge_A_Federated_Learning_Appro
 nodes.csv
 local_model.keras
 global_model.keras
+main.py
