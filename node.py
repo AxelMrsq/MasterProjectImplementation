@@ -1,13 +1,28 @@
-import socket
-import pickle
-import json
-import pandas
-import numpy 
+import socket # Package for managing internet communication
+import pickle # Package for managing serialiszation of message
+import json # Package for managing json files
+import pandas # Package for managing csv files
+import numpy # Package for managing numpy array
+
 import os
-from tensorflow.keras.models import load_model
-from tensorflow.keras.optimizers import SGD
-from tensorflow.keras.preprocessing.sequence import pad_sequences # https://www.tensorflow.org/api_docs/python/tf/keras/utils/pad_sequences
-from model import createModel
+# 1. Suppress TensorFlow's internal logging
+# '0' = all logs shown (default)
+# '1' = filter out INFO logs
+# '2' = filter out INFO and WARNING logs
+# '3' = filter out INFO, WARNING, and ERROR logs
+os.environ["TF_CPP_MIN_LOG_LEVEL"] = "1"
+
+# Package for managing tensorflow model objects
+from tensorflow.keras.models import load_model # Function to load model from .keras files
+
+# Package for managing tensorflow model optimizers for training
+from tensorflow.keras.optimizers import SGD # Class for stochastic gradient descent objects
+
+# Package for managing timeseries data sequence
+from tensorflow.keras.preprocessing.sequence import pad_sequences # Package for managing data sample of different size
+
+# Utils funcions for machine learning 
+from model import createModel # Function for initialising a model with the architecture from
 
 
 class Node :
@@ -53,11 +68,16 @@ class Node :
 
     def getGlobalParameters(self) :
         try:
+            print("\n***Starting socket")
             s = socket.socket(socket.AF_INET, socket.SOCK_STREAM) 
             s.connect((self.ag_ip, 65432))
-            
+    
+            print("\n***Connected")
+
             message = {"token":self.token,"command":"sendGlobalParameters","value":None}
             s.sendall(pickle.dumps(message))
+
+            print("\n***Message sent")
             
             # https://stackoverflow.com/questions/44637809/python-3-6-socket-pickle-data-was-truncated
             encoded_data = b""
@@ -116,7 +136,8 @@ class Node :
         
 
         features_list = [sample["features"] for sample in samples]
-
+        
+        # https://www.tensorflow.org/api_docs/python/tf/keras/utils/pad_sequences
         X_train = pad_sequences(features_list[:int(len(samples)*0.85)], padding='pre', dtype='float32')
         X_val= pad_sequences(features_list[int(len(samples)*0.80):int(len(samples)*0.90)], padding='pre', dtype='float32')
         X_test = pad_sequences(features_list[int(len(samples)*0.90):], padding='pre', dtype='float32')
