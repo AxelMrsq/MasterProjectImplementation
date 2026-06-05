@@ -17,7 +17,7 @@ class Aggregator :
         else :
             self.global_model_path = "global_model.keras"
 
-        self.nodes = pandas.read_csv("nodes.csv")
+        self.nodes = pandas.read_csv("nodes.csv", sep=",")
     
 
     def startServer(self):
@@ -26,15 +26,13 @@ class Aggregator :
             s.bind(('0.0.0.0', 65432))
             s.listen()
             
+            print("\n***Socket started, waiting for connection")
             conn, addr = s.accept()
+            print("\n***Connection established")
 
-            encoded_data = b""
-            while True:
-                packet = conn.recv(4096)
-                if not packet: 
-                    break
-                encoded_data += packet
+            encoded_data = conn.recv(40000)
             
+            print("\n***Encoded data received")
 
             message = pickle.loads(encoded_data)
 
@@ -42,6 +40,8 @@ class Aggregator :
                 token = message["token"]
                 command = message["command"]
                 value = message["value"]
+                
+                print("\n***Message analysed")
          
                 msg_valid = True
 
