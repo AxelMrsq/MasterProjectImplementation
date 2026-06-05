@@ -38,7 +38,7 @@ class Node :
     
             local_parameters = local_model.get_weights()
             
-            message = {"token":self.token,"command":"sendLocalParameters","value":local_parameters}
+            message = {"token":self.token,"command":"getLocalParameters","value":local_parameters}
             s.sendall(pickle.dumps(message))
             
         except KeyboardInterrupt:
@@ -56,7 +56,7 @@ class Node :
             s = socket.socket(socket.AF_INET, socket.SOCK_STREAM) 
             s.connect((self.ag_ip, 65432))
             
-            message = {"token":self.token,"command":"getGlobalParameters","value":None}
+            message = {"token":self.token,"command":"sendGlobalParameters","value":None}
             s.sendall(pickle.dumps(message))
             
             # https://stackoverflow.com/questions/44637809/python-3-6-socket-pickle-data-was-truncated
@@ -130,5 +130,3 @@ class Node :
         return X_train, y_train, X_val, y_val, X_test, y_test
 
 
-n = Node()
-n.getGlobalParameters()
