@@ -1,0 +1,7 @@
+1) le client récupère le global modèle vierge
+2) le client s'entraîne en local avec les données accéssibles 
+3) le client envoie à l'aggregator
+4) l'aggregator moyenne
+5) le client récupère le global modèle à jour
+test ???
+6) le client se réentraine sur déja utilisé + nouvelle data ou seulement nouvelle data
