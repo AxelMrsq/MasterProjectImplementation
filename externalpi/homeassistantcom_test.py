@@ -10,3 +10,5 @@ conn, addr = s.accept()
 encoded_data = conn.recv(4096)
 
 print(encoded_data.decode("utf-8"))
+
+conn.sendall(b"salut")
