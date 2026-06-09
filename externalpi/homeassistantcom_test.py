@@ -4,13 +4,18 @@ import socket
 
 class HelloWorld(hass.Hass):
     def initialize(self):
-        self.log("commonucation !")
+        self.log("commonication !")
         self.listen_state(self.ping_callback,"input_button.ping")
         # https://appdaemon.readthedocs.io/en/3.0.0/APIREFERENCE.html#listen-state
-        # s = socket.socket(socket.AF_INET, socket.SOCK_STREAM) 
-        # s.connect(("192.168.1.44", 65400))
-        # s.sendall(b"coucou")
-        # self.log(s.recv(4096))
+        
 
     def ping_callback(self, entity, attribute, old, new, kwargs):
-        self.log("hello")
+        self.log("Creating socket")
+        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM) 
+        self.log("Connecting")
+        s.connect(("192.168.1.44", 65400))
+        self.log("Sending ping")
+        s.sendall(b"ping")
+        self.log("Waiting for answer")
+        self.log(s.recv(4096).decode("utf-8"))
+        
