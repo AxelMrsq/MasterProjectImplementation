@@ -1,9 +1,7 @@
 tf_env/
 __pycache__/
-vps.json
-proto_data.csv
-Short-Term_Energy_Consumption_Forecasting_at_the_Edge_A_Federated_Learning_Approach.pdf
-nodes.csv
-local_model.keras
-global_model.keras
-main.py
+homeassistantpi/vps.json
+homeassistantpi/proto_data.csv
+homeassistantpi/local_model.keras
+vps/global_model.keras
+homeassistantpi/main.py
