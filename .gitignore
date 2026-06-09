@@ -1,7 +1,14 @@
-tf_env/
-__pycache__/
+
 homeassistantpi/vps.json
 homeassistantpi/proto_data.csv
 homeassistantpi/local_model.keras
-vps/global_model.keras
 homeassistantpi/main.py
+homeassistantpi/__pycache__/
+homeassistantpi/tf_env/
+
+vps/global_model.keras
+vps/__pycache__/
+vps/tf_env/
+
+
+externalpi/__pycache__/
