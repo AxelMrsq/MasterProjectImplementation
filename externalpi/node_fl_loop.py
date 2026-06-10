@@ -1,13 +1,13 @@
 from tensorflow.keras.preprocessing.sequence import pad_sequences
+from tensorflow.keras.models import Sequential, load_model
 from tensorflow.keras.layers import LSTM, Input, Dense
-from tensorflow.keras.models import load_model
-from tensorflow.keras.models import Sequential
 from tensorflow.keras.optimizers import SGD
 from tensorflow.keras import backend 
+from pickle import loads, dumps
 from pandas import read_csv
 from numpy import array
-from pickle import loads, dumps
 import socket
+
 
 def initiateLocalModel():
     model = Sequential()
