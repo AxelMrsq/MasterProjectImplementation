@@ -16,10 +16,11 @@ def initiateGlobalModel():
     model.add(LSTM(32, return_sequences=True))
     model.add(LSTM(16))
     model.add(Dense(1)) 
-    model.save("Global_model.keras") 
+    model.save("global_model.keras") 
 
 def start():
     initiateGlobalModel()
+    global_model = load_model("global_model.keras")
 
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM) 
     s.bind(('0.0.0.0', 65432))
@@ -27,3 +28,23 @@ def start():
 
 
     conn, addr = s.accept()
+
+    msg = loads(conn.recv(4096))
+
+    for i in range(5) :
+
+        conn.sendall(dumps(global_model.get_weights()))
+
+        msg = loads(conn.recv(4096))
+
+        id = msg["id"]
+
+        key = msg["cmd"]
+
+        parameters = msg["parameters"]
+
+        key = msg["key"]
+
+
+
+    

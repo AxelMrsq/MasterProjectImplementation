@@ -64,7 +64,7 @@ def start():
 
     s.sendall(dumps({"id":1,"cmd":"GET"}))
 
-    local_model = load_model("global_model.keras")
+    local_model = load_model("local_model.keras")
     
     for i in range(5) :
 
