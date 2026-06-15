@@ -12,3 +12,4 @@ vps/tf_env/
 
 
 externalpi/__pycache__/
+externalpi/tf_env/

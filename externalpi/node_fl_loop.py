@@ -54,15 +54,15 @@ def loadData(path) :
     return X_train, X_val, X_test, y_train, y_val, y_test
 
 
-def start():
+def start(port):
     initiateLocalModel()
 
     X_train, X_val, X_test, y_train, y_val, y_test = loadData()
 
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM) 
-    s.connect(("83.228.240.76", 65432))
+    s.connect(("83.228.240.76", port))
 
-    s.sendall(dumps({"id":1,"cmd":"GET"}))
+    s.sendall(dumps({"id":1,"cmd":"GET", "key":True}))
 
     local_model = load_model("local_model.keras")
     
@@ -78,8 +78,11 @@ def start():
         local_model.fit(x=X_train, y=y_train, epochs=5, batch_size = 100) 
 
         local_model.evaluate(X_val, y_val)
-
-        s.sendall(dumps({"id":1,"cmd":"GET"}))
+        
+        if i == 4 :
+            s.sendall(dumps({"id":1,"cmd":"POST", "value":local_model.get_weights(), "key": False}))
+        else : 
+            s.sendall(dumps({"id":1,"cmd":"POST", "value":local_model.get_weights(), "key": True}))
 
 
     local_model.set_weights(loads(s.rscv(40000))["value"])
@@ -92,14 +95,14 @@ def start():
 
     local_model.fit(x=X_train, y=y_train, epochs=5, batch_size = 100) 
 
-    local_model.evaluate(X_val, y_val)
+    local_model.evaluate(X_test, y_test)
 
     local_model.save("local_model.keras")
     
     backend.clear_session()
 
 
-
+start(65432)
 
 
 
