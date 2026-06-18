@@ -7,7 +7,7 @@ from pickle import loads, dumps
 from pandas import read_csv
 from numpy import array
 import socket
-
+import struct
 
 def initiateLocalModel():
     model = Sequential()
@@ -73,7 +73,11 @@ def start(port):
     print("check")
     
     print("\n send GET cmd")
-    s.sendall(dumps({"id":1,"cmd":"GET", "key":True}))
+    
+    message = dumps({"id":1,"cmd":"GET", "key":True, "value":None})
+    header = struct.pack('!I', len(message))
+
+    s.sendall(header + message)
     print("check")
 
     local_model = load_model("local_model.keras")
@@ -81,7 +85,24 @@ def start(port):
     for i in range(5) :
 
         print("\n receive POST cmd and  set global to local")
-        local_model.set_weights(loads(s.recv(40000))["value"])
+
+        buffer = b""
+        while len(buffer) < 4:
+            packet = s.recv(4 - len(buffer))
+            buffer += packet
+        
+        header = buffer
+        message_length = struct.unpack('!I', header)[0]
+
+        buffer = b""
+        while len(buffer) < message_length:
+            packet = s.recv(message_length - len(buffer))
+            buffer += packet
+        full_data = buffer
+
+
+        local_model.set_weights(loads(full_data)["value"])
+
         print("check")
         print("\n evaluate")
         local_model.compile(optimizer=SGD(learning_rate=0.0001) , loss='mse')
@@ -97,15 +118,32 @@ def start(port):
         print("check")
         if i == 4 :
             print("\n send POST cmd")
-            s.sendall(dumps({"id":1,"cmd":"POST", "value":local_model.get_weights(), "key": False}))
+            s.sendall(dumps({"id":1,"cmd":"POST", "key": False, "value":local_model.get_weights()}))
             print("check")
         else :
             print("\n send POST cmd") 
-            s.sendall(dumps({"id":1,"cmd":"POST", "value":local_model.get_weights(), "key": True}))
+            s.sendall(dumps({"id":1,"cmd":"POST", "key": True, "value":local_model.get_weights()}))
             print("check")
 
     print("\n set global to local")
-    local_model.set_weights(loads(s.recv(40000))["value"])
+
+    buffer = b""
+    while len(buffer) < 4:
+        packet = s.recv(4 - len(buffer))
+        buffer += packet
+    
+    header = buffer
+    message_length = struct.unpack('!I', header)[0]
+
+    buffer = b""
+    while len(buffer) < message_length:
+        packet = s.recv(message_length - len(buffer))
+        buffer += packet
+    full_data = buffer
+
+
+    local_model.set_weights(loads(full_data)["value"])
+
     print("check")
 
     s.close()
@@ -127,6 +165,7 @@ def start(port):
     print("check")
     
     backend.clear_session()
+
 
 
 start(65433)

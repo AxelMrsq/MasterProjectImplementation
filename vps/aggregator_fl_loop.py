@@ -5,7 +5,7 @@ from pickle import loads, dumps
 import socket
 from numpy import zeros_like
 import threading
-
+import struct
 
 round_barrier = threading.Barrier(2)
 
@@ -33,7 +33,20 @@ def handleClient(port):
     print("Thread : Check")
     
     print("\nThread : Receiving GET cmd")
-    msg = loads(conn.recv(4096))
+    buffer = b""
+    while len(buffer) < 4:
+        packet = conn.recv(4 - len(buffer))
+        buffer += packet
+    
+    header = buffer
+    message_length = struct.unpack('!I', header)[0]
+
+    buffer = b""
+    while len(buffer) < message_length:
+        packet = conn.recv(message_length - len(buffer))
+        buffer += packet
+    full_data = buffer
+    msg = loads(full_data)
 
     client_id = msg["id"]
     print("Thread : Check")
@@ -47,14 +60,36 @@ def handleClient(port):
         print("\nThread : Sending POST cmd")
         global_model = model_dict[client_id]
 
-        conn.sendall(dumps({"cmd": "POST", "value":global_model.get_weights()}))
+        
+        
+        message = dumps({"id":client_id,"cmd": "POST","key":key, "value":global_model.get_weights()})
+        header = struct.pack('!I', len(message))
+        conn.sendall(header + message)
+
+        
         print("Thread : Check")
         
         print("\nThread : Receiving POST cmd")
-        msg = loads(conn.recv(100000))
 
-        local_parameters = msg["value"]
-        key = msg["key"]
+        buffer = b""
+        while len(buffer) < 4:
+            packet = conn.recv(4 - len(buffer))
+            buffer += packet
+        
+        header = buffer
+        message_length = struct.unpack('!I', header)[0]
+
+        buffer = b""
+        while len(buffer) < message_length:
+            packet = conn.recv(message_length - len(buffer))
+            buffer += packet
+        full_data = buffer
+
+
+       
+
+        local_parameters = loads(full_data)["value"]
+        key = loads(full_data)["key"]
 
 
         global_model.set_weights(local_parameters)
@@ -97,7 +132,11 @@ def handleClient(port):
     print("\nThread : Sending POST cmd")
     global_model = model_dict[client_id]
 
-    conn.sendall(dumps({"cmd": "POST", "value":global_model.get_weights()}))
+    header = struct.pack('!I', len(message))
+        
+    message = dumps({"id":client_id,"cmd": "POST","key":key, "value":global_model.get_weights()})
+    conn.sendall(header + message)
+
     print("Thread : Check")
 
     
