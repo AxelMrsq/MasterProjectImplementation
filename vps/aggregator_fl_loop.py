@@ -6,6 +6,7 @@ import socket
 from numpy import zeros_like
 import threading
 
+
 round_barrier = threading.Barrier(2)
 
 def initiateGlobalModel():
@@ -18,25 +19,39 @@ def initiateGlobalModel():
 
 
 def handleClient(port):
+    print("\nThread : Creating Socket")
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM) 
     s.bind(('0.0.0.0', port))
-    s.listen()
+    print("Thread : Check")
 
-    conn, addr = s.accept()
+    print("\nThread : Opening Socket")
+    s.listen()
+    print("Thread : Check")
     
+    print("\nThread : Accepting Socket")
+    conn, addr = s.accept()
+    print("Thread : Check")
+    
+    print("\nThread : Receiving GET cmd")
     msg = loads(conn.recv(4096))
 
     client_id = msg["id"]
+    print("Thread : Check")
     
     key = msg["key"] 
     
+    
     while key == True :
+        print(f"\nThread : key={key}")
 
+        print("\nThread : Sending POST cmd")
         global_model = model_dict[client_id]
 
         conn.sendall(dumps({"cmd": "POST", "value":global_model.get_weights()}))
-
-        msg = loads(conn.recv(40000))
+        print("Thread : Check")
+        
+        print("\nThread : Receiving POST cmd")
+        msg = loads(conn.recv(100000))
 
         local_parameters = msg["value"]
         key = msg["key"]
@@ -45,9 +60,13 @@ def handleClient(port):
         global_model.set_weights(local_parameters)
 
         model_dict[client_id] = global_model
-
+        print("Thread : Check")
+        
+        print("\nThread : Waiting for other client")
         barrier_idx = round_barrier.wait()
-
+        print("Thread : Check")
+        
+        print("\nThread : Aggregate")
         if barrier_idx == 0:
             aggregated_parameters = []
 
@@ -71,8 +90,15 @@ def handleClient(port):
             model_dict[2] = final_parameters
                 
 
-        
+
         round_barrier.wait()
+        print("Thread : Check")
+
+    print("\nThread : Sending POST cmd")
+    global_model = model_dict[client_id]
+
+    conn.sendall(dumps({"cmd": "POST", "value":global_model.get_weights()}))
+    print("Thread : Check")
 
     
 
@@ -80,9 +106,11 @@ def start():
 
     conn_nb = 0
     threads = []
-
+    
+    print("Initiating global model...")
     initiateGlobalModel()
     global_model = load_model("global_model.keras")
+    print("Check")
 
     global model_dict
 
@@ -90,15 +118,15 @@ def start():
 
 
 
-    client_1 = threading.Thread(target=handleClient, args=(65433))
-    client_2 = threading.Thread(target=handleClient, args=(65432))
+    client_1 = threading.Thread(target=handleClient, args=(65433,))
+    client_2 = threading.Thread(target=handleClient, args=(65432,))
 
     
     client_1.start()
 
      
     client_2.start()
-    
 
-
-    
+    client_1.join()
+    client_2.join()
+start()
