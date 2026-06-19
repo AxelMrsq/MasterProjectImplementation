@@ -118,11 +118,18 @@ def start(port):
         print("check")
         if i == 4 :
             print("\n send POST cmd")
-            s.sendall(dumps({"id":1,"cmd":"POST", "key": False, "value":local_model.get_weights()}))
+            message = dumps({"id":1,"cmd":"POST", "key": False, "value":local_model.get_weights()})
+            header = struct.pack('!I', len(message))
+
+            s.sendall(header + message) 
+            
             print("check")
         else :
             print("\n send POST cmd") 
-            s.sendall(dumps({"id":1,"cmd":"POST", "key": True, "value":local_model.get_weights()}))
+            message = dumps({"id":1,"cmd":"POST", "key": True, "value":local_model.get_weights()})
+            header = struct.pack('!I', len(message))
+
+            s.sendall(header + message)
             print("check")
 
     print("\n set global to local")
@@ -165,8 +172,6 @@ def start(port):
     print("check")
     
     backend.clear_session()
-
-
 
 start(65433)
 
