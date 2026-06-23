@@ -1,20 +1,31 @@
 import appdaemon.plugins.hass.hassapi as hass
 from datetime import datetime
 from collections import defaultdict
+import pickle
+import socket
 
 class Train(hass.Hass):
 
     def initialize(self):
-        self.log("Requesting 30 days of history...")
+        self.log("Waiting for a ping...")
+        self.listen_state(self.ping_callback,"input_button.ping")
+
         
         # 1. Fetch 30 days asynchronously to protect AppDaemon's performance
-        self.get_history(
-            entity_id="sensor.lixee_zlinky_tic_puissance_apparente", 
-            days=30, 
-            callback=self.process_history
-        )
+        # self.get_history(
+        #     entity_id="sensor.lixee_zlinky_tic_puissance_apparente", 
+        #     days=30, 
+        #     callback=self.process_history
+        # )
+
+    def ping_callback(self, entity, attribute, old, new, kwargs):
+        self.log("Ping !")
+        self.log("Getting data..")
+        self.get_history(entity_id="sensor.lixee_zlinky_tic_puissance_apparente", days=30, callback=self.process_history)
+
 
     def process_history(self, data):
+        # self.log("Ping !")
         import datetime
         from collections import defaultdict
 
@@ -29,7 +40,7 @@ class Train(hass.Hass):
             history_list = data
 
         if not history_list or not history_list[0]:
-            self.log("No historical entries found or history is empty.")
+            # self.log("No historical entries found or history is empty.")
             return
             
         entries = history_list[0] if isinstance(history_list[0], list) else history_list
@@ -54,7 +65,7 @@ class Train(hass.Hass):
                 hourly_groups[hour_floor].append(value)
 
         if not timestamps:
-            self.log("No valid numeric data found to process.")
+            # self.log("No valid numeric data found to process.")
             return
 
         # 3. Establish the bounds of your timeline
@@ -79,11 +90,18 @@ class Train(hass.Hass):
                 hourly_averages[hour_str] = 0.0
                 
             # Log the output line by line
-            self.log(f"Hour: {hour_str} | Mean: {hourly_averages[hour_str]}")
+            # self.log(f"Hour: {hour_str} | Mean: {hourly_averages[hour_str]}")
             
             # Move to the next hour increment
             current_hour += datetime.timedelta(hours=1)
 
-        self.log(f"Completed processing timeline. Outputted {len(hourly_averages)} hourly slots.")
-        self.log(hourly_averages)
+        # self.log(f"Completed processing timeline. Outputted {len(hourly_averages)} hourly slots.")
+        # self.log(hourly_averages)
+        self.log("Data prepared !")
+        self.log("Sending data...")
+        # self.log("Creating socket")
+        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM) 
+        s.connect(("192.168.1.44", 65400))
+        s.sendall(pickle.dumps(hourly_averages))
+        self.log("Data sent")
 # https://appdaemon.readthedocs.io/en/latest/HASS_API_REFERENCE.html#appdaemon.plugins.hass.hassapi.Hass.get_history
