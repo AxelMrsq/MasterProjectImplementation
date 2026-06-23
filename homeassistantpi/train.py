@@ -85,4 +85,5 @@ class Train(hass.Hass):
             current_hour += datetime.timedelta(hours=1)
 
         self.log(f"Completed processing timeline. Outputted {len(hourly_averages)} hourly slots.")
+        self.log(hourly_averages)
 # https://appdaemon.readthedocs.io/en/latest/HASS_API_REFERENCE.html#appdaemon.plugins.hass.hassapi.Hass.get_history
