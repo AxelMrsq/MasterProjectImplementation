@@ -3,6 +3,7 @@ from datetime import datetime
 from collections import defaultdict
 import pickle
 import socket
+import struct
 
 class Train(hass.Hass):
 
@@ -102,6 +103,10 @@ class Train(hass.Hass):
         # self.log("Creating socket")
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM) 
         s.connect(("192.168.1.44", 65400))
-        s.sendall(pickle.dumps(hourly_averages))
+
+        message = pickle.dumps(hourly_averages)
+        header = struct.pack('!I', len(message))
+
+        s.sendall(header + message)
         self.log("Data sent")
 # https://appdaemon.readthedocs.io/en/latest/HASS_API_REFERENCE.html#appdaemon.plugins.hass.hassapi.Hass.get_history
