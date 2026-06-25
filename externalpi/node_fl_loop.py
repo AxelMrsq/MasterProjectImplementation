@@ -4,7 +4,8 @@ from tensorflow.keras.layers import LSTM, Input, Dense
 from tensorflow.keras.optimizers import SGD
 from tensorflow.keras import backend 
 from pickle import loads, dumps
-from pandas import read_csv
+from pandas import read_csv, to_csv
+from pandas.dataframe import from_dict
 from numpy import array
 import socket
 import struct
@@ -172,6 +173,35 @@ def start(port):
     print("check")
     
     backend.clear_session()
+
+import pickle
+
+s = socket.socket(socket.AF_INET, socket.SOCK_STREAM) 
+s.bind(('0.0.0.0', 65400))
+s.listen()
+
+print("\n***Socket started, waiting for connection")
+conn, addr = s.accept()
+print("\n***Connection established")
+
+buffer = b""
+while len(buffer) < 4:
+    packet = conn.recv(4 - len(buffer))
+    buffer += packet
+
+header = buffer
+message_length = struct.unpack('!I', header)[0]
+
+buffer = b""
+while len(buffer) < message_length:
+    packet = conn.recv(message_length - len(buffer))
+    buffer += packet
+full_data = buffer
+msg = pickle.loads(full_data)
+
+data = from_dict(msg)
+
+data.to_csv("proto_data.csv")
 
 
 start(65432)
