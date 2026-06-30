@@ -4,8 +4,8 @@ from tensorflow.keras.layers import LSTM, Input, Dense
 from tensorflow.keras.optimizers import SGD
 from tensorflow.keras import backend 
 from pickle import loads, dumps
-from pandas import read_csv, to_csv
-from pandas.dataframe import from_dict
+import pandas
+from pandas import read_csv
 from numpy import array
 import socket
 import struct
@@ -199,12 +199,13 @@ while len(buffer) < message_length:
 full_data = buffer
 msg = pickle.loads(full_data)
 
-data = from_dict(msg)
+data = pandas.DataFrame.from_dict(msg, orient='index', columns=['Value'])
+
+conn.close()
+s.close()
 
 data.to_csv("proto_data.csv")
 
 
-start(65432)
-
-
+start(65433)
 
