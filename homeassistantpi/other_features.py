@@ -19,7 +19,7 @@ class Train(hass.Hass):
         # weather_entity = self.get_entity(self.weather_entity_id)
         # temperature = weather_entity.get_state(attribute="temperature")
         # humidity = weather_entity.get_state(attribute="humidity")
-        # wind_speed = weather_entity.get_state(attribute="wind_speed") # assumed m/s
+        # wind_speed = weather_entity.get_state(attribute="wind_speed")
         
         # self.log(f"Current Weather -> Temp: {temperature}°C | Humidity: {humidity}% | Wind Speed: {wind_speed} m/s")
 
@@ -28,7 +28,7 @@ class Train(hass.Hass):
 
     def process_consumption_history(self, data):
         self.consumption_raw = data
-        # Step 2: Fetch weather history (this includes its attributes over time)
+        # Step 2: Fetch weather history
         self.get_history(entity_id=self.weather_entity_id, days=30, callback=self.process_weather_history)
 
     def extract_hourly_values(self, data_payload):
@@ -107,7 +107,6 @@ class Train(hass.Hass):
             if dt:
                 hour_floor = dt.replace(minute=0, second=0, microsecond=0)
                 
-                # Pull values out of historical attributes dictionary safely
                 if "temperature" in attrs and attrs["temperature"] is not None:
                     temp_groups[hour_floor].append(float(attrs["temperature"]))
                 if "humidity" in attrs and attrs["humidity"] is not None:
@@ -128,15 +127,12 @@ class Train(hass.Hass):
         current_hour = start_hour
         
         while current_hour <= end_hour:
-            # Consumption
             cons = sum(consumption_groups[current_hour]) / len(consumption_groups[current_hour]) if current_hour in consumption_groups else 0.0
 
-            # Weather parameters extracted from attributes
             t_ext = sum(temp_groups[current_hour]) / len(temp_groups[current_hour]) if current_hour in temp_groups else 15.0
             rh = sum(humidity_groups[current_hour]) / len(humidity_groups[current_hour]) if current_hour in humidity_groups else 60.0
             ws = sum(wind_groups[current_hour]) / len(wind_groups[current_hour]) if current_hour in wind_groups else 2.0
 
-            # Apparent temperature calculation logic
             try:
                 e = (rh / 100.0) * 6.105 * math.exp((17.27 * t_ext) / (237.7 + t_ext))
                 at = t_ext + 0.33 * e - 0.70 * ws - 4.0
@@ -149,7 +145,8 @@ class Train(hass.Hass):
                 "consumption": round(cons, 2),
                 "apparent_temp": round(at, 2),
                 "is_weekend": is_weekend,
-                "hour_of_day": current_hour.hour
+                "hour_of_day": int(current_hour.hour),
+                "weekday": int(current_hour.weekday())
             }
             current_hour += datetime.timedelta(hours=1)
 
@@ -195,9 +192,11 @@ class Train(hass.Hass):
         for dt, metrics in hourly_timeline.items():
             final_payload.append({
                 "timestamp": dt.strftime("%Y-%m-%d %H:00"),
+                "hour": metrics["hour_of_day"],
+                "weekday": metrics["weekday"],
                 "consumption": metrics["consumption"],
                 "avg4d": metrics["avg4d"],
-                "apparent_temp": metrics["apparent_temp"],
+                # "apparent_temp": metrics["apparent_temp"],
                 "tempcluster": metrics["tempcluster"]
             })
 
@@ -205,8 +204,6 @@ class Train(hass.Hass):
         self.send_data(final_payload)
 
     def send_data(self, payload):
-
-        self.log(payload)
         # try:
         #     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         #     s.settimeout(10.0)
@@ -218,3 +215,4 @@ class Train(hass.Hass):
         #     self.log("Data successfully transmitted over network socket.")
         # except Exception as e:
         #     self.log(f"Socket connection failed: {str(e)}")
+        self.log(payload)
