@@ -5,7 +5,7 @@ class Train(hass.Hass):
     def initialize(self):
         # self.log("Waiting for a ping...")
         # self.listen_state(self.ping_callback, "input_button.ping")
-        self.weather_entity = "weather.forecast_home"
+        self.weather_entity =  self.get_entity("weather.forecast_home")
         state = self.weather_entity.get_state(attribute="all")
         self.log(state)
         
