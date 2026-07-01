@@ -199,7 +199,7 @@ while len(buffer) < message_length:
 full_data = buffer
 msg = pickle.loads(full_data)
 
-data = pandas.DataFrame.from_dict(msg, orient='index', columns=['Value'])
+data = pandas.DataFrame.from_dict(msg).set_index('timestamp')
 
 conn.close()
 s.close()
@@ -208,4 +208,5 @@ data.to_csv("proto_data.csv")
 
 
 start(65433)
+
 
