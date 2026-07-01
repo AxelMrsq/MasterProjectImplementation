@@ -9,6 +9,19 @@ import math
 class Train(hass.Hass):
 
     def initialize(self):
+        self.log("Waiting for a ping...")
+        self.listen_state(self.ping_callback,"input_button.ping")
+
+        
+        # 1. Fetch 30 days asynchronously to protect AppDaemon's performance
+        # self.get_history(
+        #     entity_id="sensor.lixee_zlinky_tic_puissance_apparente", 
+        #     days=30, 
+        #     callback=self.process_history
+        # )
+
+    def ping_callback(self, entity, attribute, old, new, kwargs):
+        self.log("Ping !")
         self.log("Initializing historical feature training script...")
         
         # Entity Configs
