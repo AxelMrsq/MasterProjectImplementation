@@ -25,8 +25,8 @@ def loadData(path) :
     # 1. Read data
     data = read_csv(path, sep=";")
 
-    features_col = ["Consumption", "Weekday", "Hour", "AVG4D (kWh)", "TempCluster"]
-    target_col = "Consumption"
+    features_col = ["consumption", "weekday", "hour", "avg4d", "tempcluster"]
+    target_col = "consumption"
 
     features_list = []
     targets_list = []
@@ -205,7 +205,6 @@ conn.close()
 s.close()
 
 data.to_csv("proto_data.csv")
-
 
 start(65433)
 
