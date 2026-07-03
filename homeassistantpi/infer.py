@@ -20,13 +20,13 @@ class Infer(hass.Hass):
         self.consumption_entity = "sensor.lixee_zlinky_tic_puissance_apparente"
         self.weather_entity_id = "weather.forecast_home"
 
-        self.get_history(entity_id=self.consumption_entity, days=30, callback=self.process_consumption_history)
+        self.get_history(entity_id=self.consumption_entity, days=1, callback=self.process_consumption_history)
 
     def process_consumption_history(self, data):
         self.consumption_raw = data
 
         # Step 2: Fetch weather history
-        self.get_history(entity_id=self.weather_entity_id, days=30, callback=self.process_weather_history)
+        self.get_history(entity_id=self.weather_entity_id, days=1, callback=self.process_weather_history)
 
     def extract_hourly_values(self, data_payload):
         """Helper to extract native states and group them by hour chunks"""
