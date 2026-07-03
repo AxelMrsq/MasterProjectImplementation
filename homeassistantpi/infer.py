@@ -16,10 +16,15 @@ class Infer(hass.Hass):
     def ping_callback(self, entity, attribute, old, new, kwargs):
         self.log("Infer request !")
         self.log("Getting data..")
+        # Entity Configs
+        self.consumption_entity = "sensor.lixee_zlinky_tic_puissance_apparente"
+        self.weather_entity_id = "weather.forecast_home"
+
         self.get_history(entity_id=self.consumption_entity, days=30, callback=self.process_consumption_history)
 
     def process_consumption_history(self, data):
         self.consumption_raw = data
+
         # Step 2: Fetch weather history
         self.get_history(entity_id=self.weather_entity_id, days=30, callback=self.process_weather_history)
 
