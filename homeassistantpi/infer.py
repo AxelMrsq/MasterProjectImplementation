@@ -201,15 +201,15 @@ class Infer(hass.Hass):
         self.send_data(final_payload)
 
     def send_data(self, payload):
-        # try:
-        #     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        #     s.settimeout(10.0)
-        #     s.connect(("192.168.1.44", 65400))
-        #     message = pickle.dumps(payload)
-        #     header = struct.pack('!I', len(message))
-        #     s.sendall(header + message)
-        #     s.close()
-        #     self.log("Data successfully transmitted over network socket.")
-        # except Exception as e:
-        #     self.log(f"Socket connection failed: {str(e)}")
-        self.log(payload)
+        try:
+            s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            s.settimeout(10.0)
+            s.connect(("192.168.1.44", 65400))
+            message = pickle.dumps(payload)
+            header = struct.pack('!I', len(message))
+            s.sendall(header + message)
+            s.close()
+            self.log("Data successfully transmitted over network socket.")
+        except Exception as e:
+            self.log(f"Socket connection failed: {str(e)}")
+        # self.log(payload)
