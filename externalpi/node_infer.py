@@ -2,6 +2,7 @@ import socket
 import pickle
 import struct
 import pandas
+from numpy import array
 
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM) 
 s.bind(('0.0.0.0', 65400))
@@ -28,5 +29,10 @@ msg = pickle.loads(full_data)
 
 data = pandas.DataFrame.from_dict(msg).set_index('timestamp')
 
-print(data)
+X = []
+for row in data :
+    X.append(row.values)
 
+X = array(X, dtype ='float32')
+
+print(X)
