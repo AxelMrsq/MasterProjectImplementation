@@ -57,4 +57,11 @@ local_model = load_model("local_model.keras")
 
 prediction = local_model.predict(X)
 
-print(prediction)
+print(prediction[0])
+
+
+message = pickle.dumps(prediction[0])
+header = struct.pack('!I', len(message))
+conn.sendall(header + message)
+
+conn.close()
