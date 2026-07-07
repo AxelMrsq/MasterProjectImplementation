@@ -2,6 +2,7 @@ import socket
 import pickle
 import struct
 import pandas
+import numpy
 from tensorflow.keras.models import load_model
 
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM) 
@@ -27,20 +28,30 @@ while len(buffer) < message_length:
 full_data = buffer
 msg = pickle.loads(full_data)
 
-data = pandas.DataFrame.from_dict(msg).set_index('timestamp')
+data = pandas.DataFrame.from_dict(msg)
+
+data = data.drop('timestamp', axis=1)
+
+# Conserver toutes les lignes à partir de l'index 1 (donc exclure la ligne 0)
+data = data.iloc[1:]
+
 
 data = data.astype({
     'hour': int,
     'weekday' : int,
-    'consumption': float,
-    'avg4d': float,
-    'tempcluster': bool,
-})
+    'consumption': int,
+    'avg4d': int,
+    'tempcluster': int,
+    })
 
 
 X = data.to_numpy()
 
+X = numpy.expand_dims(X, axis=0)
+
+
 print(X)
+
 
 local_model = load_model("local_model.keras")
 
