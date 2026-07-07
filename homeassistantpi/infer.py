@@ -13,7 +13,7 @@ class Infer(hass.Hass):
         self.log("Waiting for a infer signal...")
         self.listen_state(self.infer_callback,"input_button.make_inference")
 
-    def ping_callback(self, entity, attribute, old, new, kwargs):
+    def infer_callback(self, entity, attribute, old, new, kwargs):
         self.log("Infer request !")
         self.log("Getting data..")
         # Entity Configs
@@ -24,7 +24,6 @@ class Infer(hass.Hass):
 
     def process_consumption_history(self, data):
         self.consumption_raw = data
-
         # Step 2: Fetch weather history
         self.get_history(entity_id=self.weather_entity_id, days=1, callback=self.process_weather_history)
 
@@ -208,8 +207,29 @@ class Infer(hass.Hass):
             message = pickle.dumps(payload)
             header = struct.pack('!I', len(message))
             s.sendall(header + message)
-            s.close()
+            
             self.log("Data successfully transmitted over network socket.")
+
+            self.log("Waiting for infer answer")
+
+            buffer = b""
+            while len(buffer) < 4:
+                packet = s.recv(4 - len(buffer))
+                buffer += packet
+            
+            header = buffer
+            message_length = struct.unpack('!I', header)[0]
+
+            buffer = b""
+            while len(buffer) < message_length:
+                packet = s.recv(message_length - len(buffer))
+                buffer += packet
+            full_data = buffer
+
+            self.log(f"Prediction data received : {pickle.loads(full_data)}")
+
+
+            s.close()
         except Exception as e:
             self.log(f"Socket connection failed: {str(e)}")
         # self.log(payload)
