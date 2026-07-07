@@ -226,7 +226,11 @@ class Infer(hass.Hass):
                 buffer += packet
             full_data = buffer
 
-            self.log(f"Prediction data received : {pickle.loads(full_data)}")
+            prediction = pickle.loads(full_data)
+
+            self.log(f"Prediction data received : {prediction[0]}")
+
+            self.set_state("input_number.apparent_power_forecast", state=prediction[0])
 
 
             s.close()
