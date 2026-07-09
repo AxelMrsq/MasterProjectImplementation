@@ -4,8 +4,9 @@ from tensorflow.keras.layers import LSTM, Input, Dense
 from tensorflow.keras.optimizers import SGD
 from tensorflow.keras import backend 
 from pickle import loads, dumps
+import pandas
 from pandas import read_csv
-from numpy import array
+import numpy
 import socket
 import struct
 
@@ -22,10 +23,10 @@ def initiateLocalModel():
 
 def loadData(path) :
     # 1. Read data
-    data = read_csv(path, sep=";")
+    data = read_csv(path, sep=",")
 
-    features_col = ["Consumption", "Weekday", "Hour", "AVG4D (kWh)", "TempCluster"]
-    target_col = "Consumption"
+    features_col = ["consumption", "weekday", "hour", "avg4d", "tempcluster"]
+    target_col = "consumption"
 
     features_list = []
     targets_list = []
@@ -46,9 +47,9 @@ def loadData(path) :
     X_val = pad_sequences(features_list[split_80:split_90], padding='pre', dtype='float32')
     X_test = pad_sequences(features_list[split_90:], padding='pre', dtype='float32')
 
-    y_train = array(targets_list[:split_85], dtype='float32')
-    y_val = array(targets_list[split_80:split_90], dtype='float32')
-    y_test = array(targets_list[split_90:], dtype='float32')
+    y_train = numpy.array(targets_list[:split_85], dtype='float32')
+    y_val = numpy.array(targets_list[split_80:split_90], dtype='float32')
+    y_test = numpy.array(targets_list[split_90:], dtype='float32')
 
     # 5. Return the clean arrays
     return X_train, X_val, X_test, y_train, y_val, y_test
@@ -80,7 +81,7 @@ def start(port):
     s.sendall(header + message)
     print("check")
 
-    local_model = load_model("local_model.keras")
+    local_model = load_model("local_modelbis.keras")
     
     for i in range(5) :
 
@@ -173,7 +174,65 @@ def start(port):
     
     backend.clear_session()
 
-start(65432)
+import pickle
 
+s = socket.socket(socket.AF_INET, socket.SOCK_STREAM) 
+s.bind(('0.0.0.0', 65400))
+s.listen()
 
+print("\n***Socket started, waiting for connection")
+conn, addr = s.accept()
+print("\n***Connection established")
 
+buffer = b""
+while len(buffer) < 4:
+    packet = conn.recv(4 - len(buffer))
+    buffer += packet
+
+header = buffer
+message_length = struct.unpack('!I', header)[0]
+
+buffer = b""
+while len(buffer) < message_length:
+    packet = conn.recv(message_length - len(buffer))
+    buffer += packet
+full_data = buffer
+msg = pickle.loads(full_data)
+
+data = pandas.DataFrame.from_dict(msg["data"])
+
+data = data.drop('timestamp', axis=1)
+
+data = data.astype({
+    'hour': int,
+    'weekday' : int,
+    'consumption': int,
+    'avg4d': int,
+    'tempcluster': int,
+    })
+
+cmd = msg["cmd"]
+
+if cmd == "infer" :
+    data = data.iloc[1:]
+    X = data.to_numpy()
+
+    X = numpy.expand_dims(X, axis=0)
+
+    local_model = load_model("local_model.keras")
+
+    prediction = local_model.predict(X)
+
+    message = pickle.dumps(prediction[0])
+    header = struct.pack('!I', len(message))
+    conn.sendall(header + message)
+
+    conn.close()
+
+else :
+    conn.close()
+    s.close()
+
+    data.to_csv("proto_data.csv")
+
+    start(65433)
