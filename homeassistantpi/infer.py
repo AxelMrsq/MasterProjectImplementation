@@ -196,8 +196,10 @@ class Infer(hass.Hass):
                 "tempcluster": metrics["tempcluster"]
             })
 
-        self.log(f"Successfully processed {len(final_payload)} timeline samples.")
-        self.send_data(final_payload)
+        final_payload_bis = {"cmd" : "infer", "data": final_payload}
+
+        self.log(f"Successfully processed {len(final_payload_bis)} timeline samples.")
+        self.send_data(final_payload_bis)
 
     def send_data(self, payload):
         try:
