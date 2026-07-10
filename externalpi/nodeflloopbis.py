@@ -201,6 +201,8 @@ def start(port):
     print("check")
     
     backend.clear_session()
+    s.close()
+
 
     return train_data_score
 
@@ -260,13 +262,19 @@ if cmd == "infer" :
     conn.close()
 
 else :
-    conn.close()
-    s.close()
+    
 
     data.to_csv("proto_data.csv")
 
     train_data_score = start(65433)
 
-    print(f"train data score :{train_data_score}")
+    message = pickle.dumps(train_data_score)
+    header = struct.pack('!I', len(message))
+    conn.sendall(header + message)
+
+
+    conn.close()
+    
+    # print(f"train data score :{train_data_score}")
 
     # print(f"train data history :{train_data_history}")
