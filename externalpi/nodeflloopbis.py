@@ -10,6 +10,8 @@ import numpy
 import socket
 import struct
 
+import matplotlib.pyplot 
+
 def initiateLocalModel():
     model = Sequential()
     model.add(Input(shape = (24, 5)))  
@@ -58,7 +60,6 @@ def loadData(path) :
 def start(port):
 
     train_data_score = []
-    train_data_history = []
 
     print("Initiating local model...")
     initiateLocalModel()
@@ -85,7 +86,7 @@ def start(port):
     s.sendall(header + message)
     print("check")
 
-    local_model = load_model("local_modelbis.keras")
+    local_model = load_model("local_model.keras")
     
     for i in range(5) :
 
@@ -116,7 +117,17 @@ def start(port):
         print("\n train")
         
          
-        train_data_history.append(local_model.fit(x=X_train, y=y_train, epochs=5, batch_size = 100)) 
+        history = local_model.fit(x=X_train, y=y_train, epochs=5, batch_size = 100)
+
+        fig, ax = matplotlib.pyplot.subplots(1,1)
+
+        ax.plot(history.history['loss'], label='Train loss')
+        ax.set_title('loss evolution')
+        ax.set_xlabel('epoch')
+        ax.legend()
+
+        fig.show()
+
         print("check")
         print("\n evaluate")
         train_data_score.append(local_model.evaluate(X_val, y_val))
@@ -167,7 +178,17 @@ def start(port):
 
     local_model.compile(optimizer=SGD(learning_rate=0.0001) , loss='mse')
 
-    train_data_history.append(local_model.fit(x=X_train, y=y_train, epochs=5, batch_size = 100)) 
+    history = local_model.fit(x=X_train, y=y_train, epochs=5, batch_size = 100) 
+
+    fig, ax = matplotlib.pyplot.subplots(1,1)
+
+    ax.plot(history.history['loss'], label='Train loss')    
+    ax.set_title('loss evolution')
+    ax.set_xlabel('epoch')
+    ax.legend()
+
+    fig.show()
+    
     print("check")
     print("\n evaluate")
     train_data_score.append(local_model.evaluate(X_test, y_test))
@@ -179,7 +200,7 @@ def start(port):
     
     backend.clear_session()
 
-    return train_data_score, train_data_history
+    return train_data_score
 
 import pickle
 
@@ -242,8 +263,8 @@ else :
 
     data.to_csv("proto_data.csv")
 
-    train_data_score, train_data_history = start(65433)
+    train_data_score = start(65433)
 
     print(f"train data score :{train_data_score}")
 
-    print(f"train data history :{train_data_history}")
+    # print(f"train data history :{train_data_history}")
