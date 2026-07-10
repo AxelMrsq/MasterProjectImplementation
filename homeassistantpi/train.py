@@ -226,7 +226,7 @@ class Train(hass.Hass):
             message = pickle.dumps(payload)
             header = struct.pack('!I', len(message))
             s.sendall(header + message)
-            s.close()
+            
             self.log("Data successfully transmitted over network socket.")
             self.log("Waiting for train answer")
 
@@ -247,6 +247,7 @@ class Train(hass.Hass):
             score = pickle.loads(full_data)
 
             self.log(score)
+            s.close()
         except Exception as e:
             self.log(f"Socket connection failed: {str(e)}")
         # self.log(payload)
