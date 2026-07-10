@@ -23,10 +23,10 @@ def initiateLocalModel():
 
 def loadData(path) :
     # 1. Read data
-    data = read_csv(path, sep=",")
+    data = read_csv(path, sep=";")
 
-    features_col = ["consumption", "weekday", "hour", "avg4d", "tempcluster"]
-    target_col = "consumption"
+    features_col = ["Consumption","Weekday","Hour","AVG4D (kWh)","TempCluster"]
+    target_col = "Consumption"
 
     features_list = []
     targets_list = []
@@ -174,38 +174,7 @@ def start(port):
     
     backend.clear_session()
 
-import pickle
 
-s = socket.socket(socket.AF_INET, socket.SOCK_STREAM) 
-s.bind(('0.0.0.0', 65400))
-s.listen()
-
-print("\n***Socket started, waiting for connection")
-conn, addr = s.accept()
-print("\n***Connection established")
-
-buffer = b""
-while len(buffer) < 4:
-    packet = conn.recv(4 - len(buffer))
-    buffer += packet
-
-header = buffer
-message_length = struct.unpack('!I', header)[0]
-
-buffer = b""
-while len(buffer) < message_length:
-    packet = conn.recv(message_length - len(buffer))
-    buffer += packet
-full_data = buffer
-msg = pickle.loads(full_data)
-
-data = pandas.DataFrame.from_dict(msg).set_index('timestamp')
-
-conn.close()
-s.close()
-
-data.to_csv("proto_data.csv")
-
-start(65433)
+start(65432)
 
 

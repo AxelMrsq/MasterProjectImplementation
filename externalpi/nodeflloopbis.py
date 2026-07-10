@@ -56,6 +56,10 @@ def loadData(path) :
 
 
 def start(port):
+
+    train_data_score = []
+    train_data_history = []
+
     print("Initiating local model...")
     initiateLocalModel()
     print("Check")
@@ -107,15 +111,16 @@ def start(port):
         print("check")
         print("\n evaluate")
         local_model.compile(optimizer=SGD(learning_rate=0.0001) , loss='mse')
-        local_model.evaluate(X_val, y_val)
+        train_data_score.append(local_model.evaluate(X_val, y_val))
         print("check")
         print("\n train")
         
          
-        local_model.fit(x=X_train, y=y_train, epochs=5, batch_size = 100) 
+        train_data_history.append(local_model.fit(x=X_train, y=y_train, epochs=5, batch_size = 100)) 
         print("check")
         print("\n evaluate")
-        local_model.evaluate(X_val, y_val)
+        train_data_score.append(local_model.evaluate(X_val, y_val))
+
         print("check")
         if i == 4 :
             print("\n send POST cmd")
@@ -156,16 +161,16 @@ def start(port):
 
     s.close()
     print("\n evaluate")
-    local_model.evaluate(X_val, y_val)
+    train_data_score.append(local_model.evaluate(X_val, y_val))
     print("check")
     print("\n train")
 
     local_model.compile(optimizer=SGD(learning_rate=0.0001) , loss='mse')
 
-    local_model.fit(x=X_train, y=y_train, epochs=5, batch_size = 100) 
+    train_data_history.append(local_model.fit(x=X_train, y=y_train, epochs=5, batch_size = 100)) 
     print("check")
     print("\n evaluate")
-    local_model.evaluate(X_test, y_test)
+    train_data_score.append(local_model.evaluate(X_test, y_test))
     print("check")
     
     print("\n save")
@@ -173,6 +178,8 @@ def start(port):
     print("check")
     
     backend.clear_session()
+
+    return train_data_score, train_data_history
 
 import pickle
 
@@ -235,4 +242,8 @@ else :
 
     data.to_csv("proto_data.csv")
 
-    start(65433)
+    train_data_score, train_data_history = start(65433)
+
+    print(f"train data score :{train_data_score}")
+
+    print(f"train data history :{train_data_history}")
