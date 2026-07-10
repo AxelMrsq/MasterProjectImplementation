@@ -37,12 +37,12 @@ class Train(hass.Hass):
         # self.log(f"Current Weather -> Temp: {temperature}°C | Humidity: {humidity}% | Wind Speed: {wind_speed} m/s")
 
         # Step 1: Fetch consumption history
-        self.get_history(entity_id=self.consumption_entity, days=30, callback=self.process_consumption_history)
+        self.get_history(entity_id=self.consumption_entity, days=10, callback=self.process_consumption_history)
 
     def process_consumption_history(self, data):
         self.consumption_raw = data
         # Step 2: Fetch weather history
-        self.get_history(entity_id=self.weather_entity_id, days=30, callback=self.process_weather_history)
+        self.get_history(entity_id=self.weather_entity_id, days=10, callback=self.process_weather_history)
 
     def extract_hourly_values(self, data_payload):
         """Helper to extract native states and group them by hour chunks"""
