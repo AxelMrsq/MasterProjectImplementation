@@ -60,6 +60,7 @@ def loadData(path) :
 def start(port):
 
     train_data_score = []
+    n = 0
 
     print("Initiating local model...")
     initiateLocalModel()
@@ -126,7 +127,8 @@ def start(port):
         ax.set_xlabel('epoch')
         ax.legend()
 
-        fig.show()
+        fig.savefig(f'history{n}.png')
+        n+=1
 
         print("check")
         print("\n evaluate")
@@ -187,8 +189,8 @@ def start(port):
     ax.set_xlabel('epoch')
     ax.legend()
 
-    fig.show()
-    
+    fig.savefig(f'history{n}.png')
+    n+=1
     print("check")
     print("\n evaluate")
     train_data_score.append(local_model.evaluate(X_test, y_test))
