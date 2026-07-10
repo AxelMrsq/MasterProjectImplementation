@@ -219,35 +219,33 @@ class Train(hass.Hass):
         self.send_data(final_payload_bis)
 
     def send_data(self, payload):
-        try:
-            s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            s.settimeout(10.0)
-            s.connect(("192.168.1.44", 65400))
-            message = pickle.dumps(payload)
-            header = struct.pack('!I', len(message))
-            s.sendall(header + message)
-            
-            self.log("Data successfully transmitted over network socket.")
-            self.log("Waiting for train answer")
+        
+        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        s.settimeout(10.0)
+        s.connect(("192.168.1.44", 65400))
+        message = pickle.dumps(payload)
+        header = struct.pack('!I', len(message))
+        s.sendall(header + message)
+        
+        self.log("Data successfully transmitted over network socket.")
+        self.log("Waiting for train answer")
 
-            buffer = b""
-            while len(buffer) < 4:
-                packet = s.recv(4 - len(buffer))
-                buffer += packet
-            
-            header = buffer
-            message_length = struct.unpack('!I', header)[0]
+        buffer = b""
+        while len(buffer) < 4:
+            packet = s.recv(4 - len(buffer))
+            buffer += packet
+        
+        header = buffer
+        message_length = struct.unpack('!I', header)[0]
 
-            buffer = b""
-            while len(buffer) < message_length:
-                packet = s.recv(message_length - len(buffer))
-                buffer += packet
-            full_data = buffer
+        buffer = b""
+        while len(buffer) < message_length:
+            packet = s.recv(message_length - len(buffer))
+            buffer += packet
+        full_data = buffer
 
-            score = pickle.loads(full_data)
+        score = pickle.loads(full_data)
 
-            self.log(score)
-            s.close()
-        except Exception as e:
-            self.log(f"Socket connection failed: {str(e)}")
+        self.log(score)
+        s.close()
         # self.log(payload)
