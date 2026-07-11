@@ -223,7 +223,7 @@ class Train(hass.Hass):
     def send_data(self, payload):
         
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        s.settimeout(10.0)
+        s.settimeout(120.0)
         s.connect(("192.168.1.44", 65400))
         message = pickle.dumps(payload)
         header = struct.pack('!I', len(message))
