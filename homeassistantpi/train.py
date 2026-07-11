@@ -5,6 +5,7 @@ import pickle
 import socket
 import struct
 import math
+import threading
 
 class Train(hass.Hass):
 
@@ -216,7 +217,8 @@ class Train(hass.Hass):
         final_payload_bis = {"cmd" : "train", "data": final_payload}
 
         self.log(f"Successfully processed {len(final_payload_bis)} timeline samples.")
-        self.send_data(final_payload_bis)
+        threading.Thread(target=self.send_data, args=(final_payload_bis,), daemon=True).start()
+        
 
     def send_data(self, payload):
         
