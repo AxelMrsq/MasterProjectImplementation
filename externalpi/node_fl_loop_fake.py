@@ -16,7 +16,7 @@ def initiateLocalModel():
     model.add(LSTM(32, return_sequences=True))
     model.add(LSTM(16))
     model.add(Dense(1)) 
-    model.save("local_modelbis.keras") 
+    model.save("local_model.keras") 
 
     backend.clear_session()
 
@@ -81,7 +81,7 @@ def start(port):
     s.sendall(header + message)
     print("check")
 
-    local_model = load_model("local_modelbis.keras")
+    local_model = load_model("local_model.keras")
     
     for i in range(5) :
 
