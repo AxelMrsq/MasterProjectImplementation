@@ -126,7 +126,7 @@ class Train(hass.Hass):
                 if "humidity" in attrs and attrs["humidity"] is not None:
                     humidity_groups[hour_floor].append(float(attrs["humidity"]))
                 if "wind_speed" in attrs and attrs["wind_speed"] is not None:
-                    wind_groups[hour_floor].append(float(attrs["wind_speed"]))
+                    wind_groups[hour_floor].append(float(attrs["wind_speed"])/3.6)
 
         # Assemble timelines
         all_timestamps = list(consumption_groups.keys()) + list(temp_groups.keys())
