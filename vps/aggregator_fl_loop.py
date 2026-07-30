@@ -41,6 +41,8 @@ def handleClient(port):
     header = buffer
     message_length = struct.unpack('!I', header)[0]
 
+    print(f"message rcv length : {message_length}")
+
     buffer = b""
     while len(buffer) < message_length:
         packet = conn.recv(message_length - len(buffer))
@@ -64,6 +66,8 @@ def handleClient(port):
         
         message = dumps({"id":client_id,"cmd": "POST","key":key, "value":global_model.get_weights()})
         header = struct.pack('!I', len(message))
+
+        print(f"message sent length : {len(message)}")
         conn.sendall(header + message)
 
         
@@ -78,6 +82,8 @@ def handleClient(port):
         
         header = buffer
         message_length = struct.unpack('!I', header)[0]
+        print(f"message rcv length : {message_length}")
+        
 
         buffer = b""
         while len(buffer) < message_length:
@@ -133,6 +139,8 @@ def handleClient(port):
     global_model = model_dict[client_id]
 
     header = struct.pack('!I', len(message))
+
+    print(f"message sent length : {len(message)}")
         
     message = dumps({"id":client_id,"cmd": "POST","key":key, "value":global_model.get_weights()})
     conn.sendall(header + message)
