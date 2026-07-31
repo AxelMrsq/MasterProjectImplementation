@@ -184,6 +184,8 @@ class Train(hass.Hass):
 
         # 4. K-Means (k=2) Clustering for Apparent Temperature
         at_values = [m["apparent_temp"] for m in hourly_timeline.values()]
+        self.log("at values :")
+        self.log(at_values)
         if at_values:
             c0, c1 = min(at_values), max(at_values)
             if c0 == c1: c1 += 1.0
