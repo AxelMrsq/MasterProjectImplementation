@@ -23,10 +23,10 @@ def initiateLocalModel():
 
 def loadData(path) :
     # 1. Read data
-    data = read_csv(path, sep=",")
+    data = read_csv(path, sep=";")
 
-    features_col = ["consumption", "weekday", "hour", "avg4d", "tempcluster"]
-    target_col = "consumption"
+    features_col = ["Consumption", "Weekday", "Hour", "AVG4D (kWh)", "TempCluster"]
+    target_col = "Consumption"
 
     features_list = []
     targets_list = []
