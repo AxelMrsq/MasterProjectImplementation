@@ -206,9 +206,11 @@ class Infer(hass.Hass):
             s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             s.settimeout(10.0)
             s.connect(("192.168.1.44", 65400))
+
             message = pickle.dumps(payload)
             header = struct.pack('!I', len(message))
             s.sendall(header + message)
+            self.log(f"Msg sent length {len(message)}")  
             
             self.log("Data successfully transmitted over network socket.")
 
@@ -221,6 +223,8 @@ class Infer(hass.Hass):
             
             header = buffer
             message_length = struct.unpack('!I', header)[0]
+
+            self.log(f"Msg recv length {message_length}")
 
             buffer = b""
             while len(buffer) < message_length:

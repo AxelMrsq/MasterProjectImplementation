@@ -230,6 +230,8 @@ class Train(hass.Hass):
         message = pickle.dumps(payload)
         header = struct.pack('!I', len(message))
         s.sendall(header + message)
+
+        self.log(f"Msg sent length {len(message)}")  
         
         self.log("Data successfully transmitted over network socket.")
         self.log("Waiting for train answer")
@@ -241,6 +243,8 @@ class Train(hass.Hass):
         
         header = buffer
         message_length = struct.unpack('!I', header)[0]
+
+        self.log(f"Msg rcv length {message_length}")
 
         buffer = b""
         while len(buffer) < message_length:
