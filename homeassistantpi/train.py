@@ -10,8 +10,8 @@ import threading
 class Train(hass.Hass):
 
     def initialize(self):
-        self.log("Waiting for a ping...")
-        self.listen_state(self.ping_callback,"input_button.ping")
+        self.log("Waiting for a train signal...")
+        self.listen_state(self.ping_callback,"input_button.start_training")
 
         
         # 1. Fetch 30 days asynchronously to protect AppDaemon's performance
@@ -22,7 +22,7 @@ class Train(hass.Hass):
         # )
 
     def ping_callback(self, entity, attribute, old, new, kwargs):
-        self.log("Ping !")
+        self.log("Training signal received")
         self.log("Initializing historical feature training script...")
         
         # Entity Configs
