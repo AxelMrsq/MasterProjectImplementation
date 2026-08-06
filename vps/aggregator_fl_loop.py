@@ -54,26 +54,29 @@ def handleClient(port):
     print("Thread : Check")
     
     key = msg["key"] 
+    r = 0 
     
     
     while key == True :
-        print(f"\nThread : key={key}")
+        print(f"r = {r}")
+        r+=1
+        print(f"\nThread client id {client_id} : key={key}")
 
-        print("\nThread : Sending POST cmd")
+        print(f"\nThread client id {client_id} : Sending POST cmd")
+
         global_model = model_dict[client_id]
-
-        
+    
         
         message = dumps({"id":client_id,"cmd": "POST","key":key, "value":global_model.get_weights()})
         header = struct.pack('!I', len(message))
 
-        print(f"message sent length : {len(message)}")
+        print(f" client id {client_id} message sent length : {len(message)}")
         conn.sendall(header + message)
 
         
-        print("Thread : Check")
+        print(f"Thread client id {client_id} : Check")
         
-        print("\nThread : Receiving POST cmd")
+        print(f"\nThread client id {client_id} : Receiving POST cmd")
 
         buffer = b""
         while len(buffer) < 4:
@@ -82,7 +85,7 @@ def handleClient(port):
         
         header = buffer
         message_length = struct.unpack('!I', header)[0]
-        print(f"message rcv length : {message_length}")
+        print(f" client id {client_id} message rcv length : {message_length}")
         
 
         buffer = b""
@@ -101,18 +104,19 @@ def handleClient(port):
         global_model.set_weights(local_parameters)
 
         model_dict[client_id] = global_model
-        print("Thread : Check")
+        print(f" client id {client_id} Thread : Check")
         
-        print("\nThread : Waiting for other client")
+        print(f"\n client id {client_id} Thread : Waiting for other client")
         barrier_idx = round_barrier.wait()
-        print("Thread : Check")
+        print(f" client id {client_id}Thread : Check")
         
-        print("\nThread : Aggregate")
+        
         if barrier_idx == 0:
+            print(f"\n client id {client_id} Thread : Aggregate")
             aggregated_parameters = []
 
-            parameters_1 = model_dict[1].get_weights()
-            parameters_2 = model_dict[2].get_weights()
+            parameters_1 = model_dict[0].get_weights()
+            parameters_2 = model_dict[1].get_weights()
 
             for parameters_layer in parameters_1 :
                 aggregated_parameters.append(zeros_like(parameters_layer))
@@ -127,25 +131,25 @@ def handleClient(port):
                 n+=1
                 final_parameters.append(parameters_layer / 2)
 
-            model_dict[1] = final_parameters
-            model_dict[2] = final_parameters
+            model_dict[0].set_weights(final_parameters)
+            model_dict[1].set_weights(final_parameters)
                 
 
 
         round_barrier.wait()
-        print("Thread : Check")
+        print(f" client id {client_id} Thread : Check")
 
-    print("\nThread : Sending POST cmd")
+    print(f"\n client id {client_id} Thread : Sending POST cmd")
     global_model = model_dict[client_id]
 
     header = struct.pack('!I', len(message))
 
-    print(f"message sent length : {len(message)}")
+    print(f" client id {client_id} message sent length : {len(message)}")
         
     message = dumps({"id":client_id,"cmd": "POST","key":key, "value":global_model.get_weights()})
     conn.sendall(header + message)
 
-    print("Thread : Check")
+    print(f" client id {client_id} Thread : Check")
 
     
 
@@ -161,7 +165,7 @@ def start():
 
     global model_dict
 
-    model_dict = {1: global_model, 2: global_model}
+    model_dict = {0: global_model, 1: global_model}
 
 
 

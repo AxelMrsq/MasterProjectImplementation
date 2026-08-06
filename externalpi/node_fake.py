@@ -83,7 +83,7 @@ def start(port):
 
     local_model = load_model("local_modelbis.keras")
     
-    for i in range(5) :
+    for i in range(50) :
 
         print("\n receive POST cmd and  set global to local")
 
@@ -117,7 +117,7 @@ def start(port):
         print("\n evaluate")
         local_model.evaluate(X_val, y_val)
         print("check")
-        if i == 4 :
+        if i == 49 :
             print("\n send POST cmd")
             message = dumps({"id":1,"cmd":"POST", "key": False, "value":local_model.get_weights()})
             header = struct.pack('!I', len(message))
@@ -174,4 +174,4 @@ def start(port):
     
     backend.clear_session()
 
-start(65433)
+start(65432)
